@@ -1,0 +1,4 @@
+node_modules
+.DS_Store
+bceg.db
+uploads/*.xlsx
