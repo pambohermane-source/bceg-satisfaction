@@ -1,0 +1,21 @@
+{
+  "name": "bceg-satisfaction",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "africastalking": "^0.7.9",
+    "express": "^5.2.1",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.5",
+    "sqlite3": "^6.0.1",
+    "xlsx": "^0.18.5"
+  }
+}
