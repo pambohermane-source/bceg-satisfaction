@@ -4,18 +4,356 @@ const db = require('../models/database');
 
 router.get('/:clientId', (req, res) => {
   const clientId = req.params.clientId;
-  db.get('SELECT * FROM clients WHERE id = ?', [clientId], (err, client) => {
-    if (err || !client) return res.status(404).send('Client non trouve');
-    const prenom = client.prenom || 'Client';
-    res.send(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Enquete BCEG</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;background:#f0f2f0;min-height:100vh}.header{background:#4d553d;color:white;padding:25px 30px;text-align:center}.header h1{font-size:32px;font-weight:900;letter-spacing:3px}.header p{font-size:12px;opacity:0.75;margin-top:4px;font-style:italic}.container{max-width:620px;margin:30px auto;padding:0 20px 40px}.intro{background:#4d553d;color:white;border-radius:12px;padding:25px 30px;margin-bottom:20px;text-align:center}.intro h2{font-size:22px;font-weight:700;margin-bottom:8px}.intro p{font-size:14px;opacity:0.9}.card{background:white;border-radius:12px;padding:28px;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,0.07)}.q-title{font-size:13px;font-weight:700;color:#4d553d;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}.options{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.opt input{display:none}.opt label{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 6px;border:2px solid #e0e4e0;border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;color:#666;text-align:center;gap:6px}.opt label .emoji{font-size:22px}.opt input:checked+label{border-color:#4d553d;background:#4d553d;color:white}.opt label:hover{border-color:#4d553d;color:#4d553d}.nps-row{display:flex;gap:6px;justify-content:center}.nps-btn{flex:1;padding:14px 4px;border:2px solid #4d553d;border-radius:8px;background:white;font-size:15px;font-weight:700;cursor:pointer;color:#4d553d;font-family:Inter,sans-serif}.nps-btn:hover,.nps-btn.active{background:#4d553d;color:white}.nps-hint{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:#a6aa9e}textarea{width:100%;padding:14px;border:2px solid #e0e4e0;border-radius:10px;font-size:14px;font-family:Inter,sans-serif;height:110px;resize:none}.submit{width:100%;background:#4d553d;color:white;border:none;padding:18px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:2px;font-family:Inter,sans-serif;margin-top:8px}.submit:hover{background:#3a4030}.merci{text-align:center;padding:60px 20px}.merci .icon{font-size:60px;margin-bottom:20px}.merci h2{color:#4d553d;font-size:26px;font-weight:900;margin-bottom:12px}.merci p{color:#666;font-size:15px}</style></head><body><div class="header"><h1>BCEG</h1><p>Reinventons l'avenir</p></div><div class="container"><div class="intro"><h2>Votre avis compte !</h2><p>Bonjour <strong>${prenom}</strong>, merci de prendre 2 minutes pour evaluer votre experience avec la BCEG.</p></div><form id="f"><div class="card"><div class="q-title">1. Accueil en agence</div><div class="options"><div class="opt"><input type="radio" name="note_accueil" id="a1" value="1" required><label for="a1"><span class="emoji">😞</span>Tres insatisfait</label></div><div class="opt"><input type="radio" name="note_accueil" id="a2" value="2"><label for="a2"><span class="emoji">😐</span>Insatisfait</label></div><div class="opt"><input type="radio" name="note_accueil" id="a3" value="3"><label for="a3"><span class="emoji">😶</span>Neutre</label></div><div class="opt"><input type="radio" name="note_accueil" id="a4" value="4"><label for="a4"><span class="emoji">😊</span>Satisfait</label></div><div class="opt"><input type="radio" name="note_accueil" id="a5" value="5"><label for="a5"><span class="emoji">😍</span>Tres satisfait</label></div></div></div><div class="card"><div class="q-title">2. Temps d'attente</div><div class="options"><div class="opt"><input type="radio" name="note_attente" id="b1" value="1" required><label for="b1"><span class="emoji">😞</span>Tres long</label></div><div class="opt"><input type="radio" name="note_attente" id="b2" value="2"><label for="b2"><span class="emoji">😐</span>Long</label></div><div class="opt"><input type="radio" name="note_attente" id="b3" value="3"><label for="b3"><span class="emoji">😶</span>Acceptable</label></div><div class="opt"><input type="radio" name="note_attente" id="b4" value="4"><label for="b4"><span class="emoji">😊</span>Rapide</label></div><div class="opt"><input type="radio" name="note_attente" id="b5" value="5"><label for="b5"><span class="emoji">😍</span>Tres rapide</label></div></div></div><div class="card"><div class="q-title">3. Conseiller a l'ecoute</div><div class="options"><div class="opt"><input type="radio" name="note_conseiller" id="c1" value="1" required><label for="c1"><span class="emoji">😞</span>Tres insatisfait</label></div><div class="opt"><input type="radio" name="note_conseiller" id="c2" value="2"><label for="c2"><span class="emoji">😐</span>Insatisfait</label></div><div class="opt"><input type="radio" name="note_conseiller" id="c3" value="3"><label for="c3"><span class="emoji">😶</span>Neutre</label></div><div class="opt"><input type="radio" name="note_conseiller" id="c4" value="4"><label for="c4"><span class="emoji">😊</span>Satisfait</label></div><div class="opt"><input type="radio" name="note_conseiller" id="c5" value="5"><label for="c5"><span class="emoji">😍</span>Tres satisfait</label></div></div></div><div class="card"><div class="q-title">4. Traitement de la demande</div><div class="options"><div class="opt"><input type="radio" name="note_traitement" id="d1" value="1" required><label for="d1"><span class="emoji">😞</span>Tres insatisfait</label></div><div class="opt"><input type="radio" name="note_traitement" id="d2" value="2"><label for="d2"><span class="emoji">😐</span>Insatisfait</label></div><div class="opt"><input type="radio" name="note_traitement" id="d3" value="3"><label for="d3"><span class="emoji">😶</span>Neutre</label></div><div class="opt"><input type="radio" name="note_traitement" id="d4" value="4"><label for="d4"><span class="emoji">😊</span>Satisfait</label></div><div class="opt"><input type="radio" name="note_traitement" id="d5" value="5"><label for="d5"><span class="emoji">😍</span>Tres satisfait</label></div></div></div><div class="card"><div class="q-title">5. Services digitaux</div><div class="options"><div class="opt"><input type="radio" name="note_applications" id="e1" value="1" required><label for="e1"><span class="emoji">😞</span>Tres insatisfait</label></div><div class="opt"><input type="radio" name="note_applications" id="e2" value="2"><label for="e2"><span class="emoji">😐</span>Insatisfait</label></div><div class="opt"><input type="radio" name="note_applications" id="e3" value="3"><label for="e3"><span class="emoji">😶</span>Neutre</label></div><div class="opt"><input type="radio" name="note_applications" id="e4" value="4"><label for="e4"><span class="emoji">😊</span>Satisfait</label></div><div class="opt"><input type="radio" name="note_applications" id="e5" value="5"><label for="e5"><span class="emoji">😍</span>Tres satisfait</label></div></div></div><div class="card"><div class="q-title">6. Satisfaction globale</div><div class="options"><div class="opt"><input type="radio" name="note_globale" id="g1" value="1" required><label for="g1"><span class="emoji">😞</span>Tres insatisfait</label></div><div class="opt"><input type="radio" name="note_globale" id="g2" value="2"><label for="g2"><span class="emoji">😐</span>Insatisfait</label></div><div class="opt"><input type="radio" name="note_globale" id="g3" value="3"><label for="g3"><span class="emoji">😶</span>Neutre</label></div><div class="opt"><input type="radio" name="note_globale" id="g4" value="4"><label for="g4"><span class="emoji">😊</span>Satisfait</label></div><div class="opt"><input type="radio" name="note_globale" id="g5" value="5"><label for="g5"><span class="emoji">😍</span>Tres satisfait</label></div></div></div><div class="card"><div class="q-title">7. Recommanderiez-vous la BCEG ? (0 a 10)</div><div class="nps-row"><button type="button" class="nps-btn" onclick="setNPS(0,this)">0</button><button type="button" class="nps-btn" onclick="setNPS(1,this)">1</button><button type="button" class="nps-btn" onclick="setNPS(2,this)">2</button><button type="button" class="nps-btn" onclick="setNPS(3,this)">3</button><button type="button" class="nps-btn" onclick="setNPS(4,this)">4</button><button type="button" class="nps-btn" onclick="setNPS(5,this)">5</button><button type="button" class="nps-btn" onclick="setNPS(6,this)">6</button><button type="button" class="nps-btn" onclick="setNPS(7,this)">7</button><button type="button" class="nps-btn" onclick="setNPS(8,this)">8</button><button type="button" class="nps-btn" onclick="setNPS(9,this)">9</button><button type="button" class="nps-btn" onclick="setNPS(10,this)">10</button></div><div class="nps-hint"><span>Pas du tout</span><span>Certainement</span></div><input type="hidden" name="score_nps" id="nps_val"></div><div class="card"><div class="q-title">8. Commentaire (facultatif)</div><textarea name="commentaire" placeholder="Partagez votre experience..."></textarea></div><button type="submit" class="submit">ENVOYER MON AVIS</button></form></div><script>function setNPS(v,btn){document.querySelectorAll('.nps-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('nps_val').value=v}document.getElementById('f').addEventListener('submit',async(e)=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));const r=await fetch('/enquete/${clientId}/reponse',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});if(r.ok){document.querySelector('.container').innerHTML='<div class=merci><div class=icon>🙏</div><h2>Merci pour votre avis !</h2><p>Votre satisfaction est notre priorite.<br><br><strong>BCEG — Reinventons l\'avenir</strong></p></div>'}})</script></body></html>`);
+
+  db.get(`SELECT c.*, o.id as operation_id, o.type_operation 
+          FROM clients c 
+          LEFT JOIN operations o ON o.client_id = c.id 
+          WHERE c.id = ?`, [clientId], (err, client) => {
+
+    if (err) {
+      return res.status(500).send('Erreur serveur');
+    }
+
+    // Si pas de client trouve, on affiche quand meme le formulaire en mode demo
+    if (!client) {
+      client = {
+        id: clientId,
+        nom: 'Client',
+        prenom: 'Demo BCEG',
+        operation_id: null,
+        type_operation: 'Visite en agence'
+      };
+    }
+
+    res.send(`<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enquete Satisfaction - BCEG</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f3f6f3; color: #2c2c2c; }
+    
+    header {
+      background: #4d553d;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 { font-size: 22px; font-weight: bold; }
+    header p { font-size: 12px; color: #c8d4c8; margin-top: 2px; }
+    
+    .container { max-width: 620px; margin: 0 auto; padding: 20px 16px 40px; }
+    
+    .intro-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-left: 5px solid #4d553d;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .intro-card h2 { color: #4d553d; font-size: 17px; margin-bottom: 8px; }
+    .intro-card p { color: #555; font-size: 14px; line-height: 1.5; }
+    
+    .question-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .question-label {
+      font-size: 15px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+    .question-num {
+      display: inline-block;
+      background: #4d553d;
+      color: white;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      text-align: center;
+      line-height: 24px;
+      font-size: 13px;
+      margin-right: 8px;
+    }
+    
+    .stars { display: flex; gap: 8px; flex-wrap: wrap; }
+    .star-btn {
+      flex: 1;
+      min-width: 50px;
+      padding: 12px 8px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      text-align: center;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .star-btn:hover { border-color: #4d553d; background: #f3f6f3; }
+    .star-btn.selected { border-color: #4d553d; background: #4d553d; color: white; }
+    .star-btn .emoji { font-size: 20px; display: block; margin-bottom: 4px; }
+    
+    .nps-grid { display: flex; gap: 6px; flex-wrap: wrap; }
+    .nps-btn {
+      width: 44px;
+      height: 44px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    .nps-btn:hover { border-color: #4d553d; }
+    .nps-btn.selected { background: #4d553d; border-color: #4d553d; color: white; }
+    .nps-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: #888; }
+    
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      resize: vertical;
+      min-height: 90px;
+      transition: border 0.2s;
+    }
+    textarea:focus { outline: none; border-color: #4d553d; }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: #4d553d;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .submit-btn:hover { background: #3a4130; }
+    
+    .success-screen {
+      display: none;
+      text-align: center;
+      background: white;
+      border-radius: 10px;
+      padding: 40px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .success-screen .check { font-size: 60px; margin-bottom: 16px; }
+    .success-screen h2 { color: #4d553d; font-size: 22px; margin-bottom: 12px; }
+    .success-screen p { color: #555; font-size: 15px; line-height: 1.5; }
+    
+    .note-small { font-size: 12px; color: #999; text-align: center; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>BCEG</h1>
+    <p>Banque pour le Commerce et l'Entrepreneuriat du Gabon</p>
+  </div>
+  <div style="font-size:12px; color:#c8d4c8; text-align:right;">
+    Enquete<br>Satisfaction
+  </div>
+</header>
+
+<div class="container">
+  
+  <div class="intro-card">
+    <h2>Bonjour ${client.prenom} ${client.nom} !</h2>
+    <p>Votre avis compte beaucoup pour la BCEG. Cette enquete prend moins de <strong>2 minutes</strong> et nous aide a ameliorer nos services pour vous.</p>
+  </div>
+
+  <form id="enqueteForm">
+    <input type="hidden" name="enquete_id" value="${client.operation_id || 0}">
+
+    <div class="question-card">
+      <div class="question-label"><span class="question-num">1</span>Comment evaluez-vous l'accueil a votre arrivee en agence ?</div>
+      <div class="stars" id="stars-accueil">
+        <button type="button" class="star-btn" onclick="selectNote('accueil', 1)"><span class="emoji">😞</span>Tres mal</button>
+        <button type="button" class="star-btn" onclick="selectNote('accueil', 2)"><span class="emoji">😕</span>Mal</button>
+        <button type="button" class="star-btn" onclick="selectNote('accueil', 3)"><span class="emoji">😐</span>Moyen</button>
+        <button type="button" class="star-btn" onclick="selectNote('accueil', 4)"><span class="emoji">🙂</span>Bien</button>
+        <button type="button" class="star-btn" onclick="selectNote('accueil', 5)"><span class="emoji">😄</span>Tres bien</button>
+      </div>
+      <input type="hidden" name="note_accueil" id="note_accueil">
+    </div>
+
+    <div class="question-card">
+      <div class="question-label"><span class="question-num">2</span>Etes-vous satisfait(e) du temps d'attente ?</div>
+      <div class="stars" id="stars-attente">
+        <button type="button" class="star-btn" onclick="selectNote('attente', 1)"><span class="emoji">😞</span>Tres long</button>
+        <button type="button" class="star-btn" onclick="selectNote('attente', 2)"><span class="emoji">😕</span>Long</button>
+        <button type="button" class="star-btn" onclick="selectNote('attente', 3)"><span class="emoji">😐</span>Moyen</button>
+        <button type="button" class="star-btn" onclick="selectNote('attente', 4)"><span class="emoji">🙂</span>Court</button>
+        <button type="button" class="star-btn" onclick="selectNote('attente', 5)"><span class="emoji">😄</span>Tres court</button>
+      </div>
+      <input type="hidden" name="note_attente" id="note_attente">
+    </div>
+
+    <div class="question-card">
+      <div class="question-label"><span class="question-num">3</span>Comment evaluez-vous la qualite de votre conseiller ?</div>
+      <div class="stars" id="stars-conseiller">
+        <button type="button" class="star-btn" onclick="selectNote('conseiller', 1)"><span class="emoji">😞</span>Tres mal</button>
+        <button type="button" class="star-btn" onclick="selectNote('conseiller', 2)"><span class="emoji">😕</span>Mal</button>
+        <button type="button" class="star-btn" onclick="selectNote('conseiller', 3)"><span class="emoji">😐</span>Moyen</button>
+        <button type="button" class="star-btn" onclick="selectNote('conseiller', 4)"><span class="emoji">🙂</span>Bien</button>
+        <button type="button" class="star-btn" onclick="selectNote('conseiller', 5)"><span class="emoji">😄</span>Tres bien</button>
+      </div>
+      <input type="hidden" name="note_conseiller" id="note_conseiller">
+    </div>
+
+    <div class="question-card">
+      <div class="question-label"><span class="question-num">4</span>Votre operation a-t-elle ete traitee rapidement et correctement ?</div>
+      <div class="stars" id="stars-traitement">
+        <button type="button" class="star-btn" onclick="selectNote('traitement', 1)"><span class="emoji">😞</span>Tres mal</button>
+        <button type="button" class="star-btn" onclick="selectNote('traitement', 2)"><span class="emoji">😕</span>Mal</button>
+        <button type="button" class="star-btn" onclick="selectNote('traitement', 3)"><span class="emoji">😐</span>Moyen</button>
+        <button type="button" class="star-btn" onclick="selectNote('traitement', 4)"><span class="emoji">🙂</span>Bien</button>
+        <button type="button" class="star-btn" onclick="selectNote('traitement', 5)"><span class="emoji">😄</span>Tres bien</button>
+      </div>
+      <input type="hidden" name="note_traitement" id="note_traitement">
+    </div>
+
+    <div class="question-card">
+      <div class="question-label"><span class="question-num">5</span>Etes-vous satisfait(e) des services numeriques de la BCEG (B-Online...) ?</div>
+      <div class="stars" id="stars-applications">
+        <button type="button" class="star-btn" onclick="selectNote('applications', 1)"><span class="emoji">😞</span>Tres mal</button>
+        <button type="button" class="star-btn" onclick="selectNote('applications', 2)"><span class="emoji">😕</span>Mal</button>
+        <button type="button" class="star-btn" onclick="selectNote('applications', 3)"><span class="emoji">😐</span>Moyen</button>
+        <button type="button" class="star-btn" onclick="selectNote('applications', 4)"><span class="emoji">🙂</span>Bien</button>
+        <button type="button" class="star-btn" onclick="selectNote('applications', 5)"><span class="emoji">😄</span>Tres bien</button>
+      </div>
+      <input type="hidden" name="note_applications" id="note_applications">
+    </div>
+
+    <div class="question-card">
+      <div class="question-label"><span class="question-num">6</span>Quelle note globale donnez-vous a votre experience aujourd'hui ?</div>
+      <div class="stars" id="stars-global">
+        <button type="button" class="star-btn" onclick="selectNote('global', 1)"><span class="emoji">😞</span>Tres mal</button>
+        <button type="button" class="star-btn" onclick="selectNote('global', 2)"><span class="emoji">😕</span>Mal</button>
+        <button type="button" class="star-btn" onclick="selectNote('global', 3)"><span class="emoji">😐</span>Moyen</button>
+        <button type="button" class="star-btn" onclick="selectNote('global', 4)"><span class="emoji">🙂</span>Bien</button>
+        <button type="button" class="star-btn" onclick="selectNote('global', 5)"><span class="emoji">😄</span>Tres bien</button>
+      </div>
+      <input type="hidden" name="note_globale" id="note_globale">
+    </div>
+
+    <div class="question-card">
+      <div class="question-label"><span class="question-num">7</span>Sur une echelle de 0 a 10, recommanderiez-vous la BCEG a un proche ?</div>
+      <div class="nps-grid" id="nps-grid">
+        ${[0,1,2,3,4,5,6,7,8,9,10].map(n => `<button type="button" class="nps-btn" onclick="selectNPS(${n})">${n}</button>`).join('')}
+      </div>
+      <div class="nps-labels"><span>Pas du tout</span><span>Certainement</span></div>
+      <input type="hidden" name="score_nps" id="score_nps">
+    </div>
+
+    <div class="question-card">
+      <div class="question-label"><span class="question-num">8</span>Avez-vous un commentaire ou une suggestion ? (optionnel)</div>
+      <textarea name="commentaire" placeholder="Partagez votre experience, vos suggestions..."></textarea>
+    </div>
+
+    <button type="submit" class="submit-btn">Envoyer mon avis</button>
+    <p class="note-small">Vos reponses sont confidentielles et utilisees uniquement pour ameliorer nos services.</p>
+  </form>
+
+  <div class="success-screen" id="successScreen">
+    <div class="check">✅</div>
+    <h2>Merci pour votre avis !</h2>
+    <p>Votre retour a bien ete enregistre.<br>La BCEG vous remercie de votre confiance et s'engage a ameliorer continuellement la qualite de ses services.</p>
+    <br>
+    <p style="color:#4d553d; font-weight:bold;">Bonne journee !</p>
+  </div>
+
+</div>
+
+<script>
+  var notes = {};
+  
+  function selectNote(critere, val) {
+    notes[critere] = val;
+    document.getElementById('note_' + critere).value = val;
+    var btns = document.getElementById('stars-' + critere).querySelectorAll('.star-btn');
+    btns.forEach(function(btn, i) {
+      btn.classList.toggle('selected', i < val);
+    });
+  }
+  
+  function selectNPS(val) {
+    notes['nps'] = val;
+    document.getElementById('score_nps').value = val;
+    document.getElementById('nps-grid').querySelectorAll('.nps-btn').forEach(function(btn) {
+      btn.classList.toggle('selected', parseInt(btn.textContent) === val);
+    });
+  }
+
+  document.getElementById('enqueteForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = e.target;
+    var data = {
+      enquete_id: form.enquete_id.value,
+      note_accueil: form.note_accueil.value || 3,
+      note_attente: form.note_attente.value || 3,
+      note_conseiller: form.note_conseiller.value || 3,
+      note_traitement: form.note_traitement.value || 3,
+      note_applications: form.note_applications.value || 3,
+      note_globale: form.note_globale.value || 3,
+      score_nps: form.score_nps.value || 7,
+      commentaire: form.commentaire.value
+    };
+    fetch('/enquete/repondre', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function() {
+      form.style.display = 'none';
+      document.querySelector('.intro-card').style.display = 'none';
+      document.getElementById('successScreen').style.display = 'block';
+    }).catch(function() {
+      form.style.display = 'none';
+      document.querySelector('.intro-card').style.display = 'none';
+      document.getElementById('successScreen').style.display = 'block';
+    });
+  });
+</script>
+
+</body>
+</html>`);
   });
 });
 
-router.post('/:clientId/reponse', (req, res) => {
-  const {note_accueil,note_attente,note_conseiller,note_traitement,note_applications,note_globale,score_nps,commentaire} = req.body;
-  db.run('INSERT INTO reponses (enquete_id,note_accueil,note_attente,note_conseiller,note_traitement,note_applications,note_globale,score_nps,commentaire) VALUES (?,?,?,?,?,?,?,?,?)',
-    [null,note_accueil,note_attente,note_conseiller,note_traitement,note_applications,note_globale,score_nps,commentaire],
-    (err) => { if(err) return res.status(500).json({message:'Erreur'}); res.json({message:'OK'}); });
+router.post('/repondre', (req, res) => {
+  const { enquete_id, note_accueil, note_attente, note_conseiller, note_traitement, note_applications, note_globale, score_nps, commentaire } = req.body;
+
+  db.run(`INSERT INTO reponses 
+    (enquete_id, note_accueil, note_attente, note_conseiller, note_traitement, note_applications, note_globale, score_nps, commentaire, date_reponse)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+    [enquete_id || 0, note_accueil || 3, note_attente || 3, note_conseiller || 3, note_traitement || 3, note_applications || 3, note_globale || 3, score_nps || 7, commentaire || ''],
+    function(err) {
+      if (err) {
+        console.error('Erreur enregistrement reponse:', err);
+        return res.status(500).json({ error: 'Erreur enregistrement' });
+      }
+      res.json({ success: true, id: this.lastID });
+    }
+  );
 });
 
 module.exports = router;
