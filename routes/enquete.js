@@ -95,6 +95,162 @@ function genererQuestionsHTML(questions, numDepart) {
   `).join('');
 }
 
+// PAGE RECLAMATION
+router.get('/reclamation', (req, res) => {
+  res.send(`<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reclamation - BCEG</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f3f6f3; color: #2c2c2c; }
+    header { background: #4d553d; color: white; padding: 16px 20px; }
+    header h1 { font-size: 22px; font-weight: bold; }
+    header p { font-size: 12px; color: #c8d4c8; margin-top: 2px; }
+    .container { max-width: 620px; margin: 0 auto; padding: 20px 16px 40px; }
+    .intro-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 5px solid #c0622a; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .intro-card h2 { color: #c0622a; font-size: 17px; margin-bottom: 8px; }
+    .intro-card p { color: #555; font-size: 14px; line-height: 1.5; }
+    .card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    label { display: block; font-weight: bold; font-size: 14px; color: #333; margin-bottom: 8px; }
+    input[type="text"], input[type="email"], input[type="tel"], select, textarea {
+      width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;
+      font-size: 14px; font-family: Arial, sans-serif; transition: border 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #4d553d; }
+    textarea { resize: vertical; min-height: 100px; }
+    .upload-zone { border: 2px dashed #a6aa9e; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f9f9f7; }
+    .upload-zone:hover { border-color: #4d553d; background: #f3f6f3; }
+    .upload-zone p { color: #666; font-size: 14px; margin-top: 8px; }
+    .upload-zone .icon { font-size: 36px; }
+    input[type="file"] { display: none; }
+    .file-preview { margin-top: 10px; font-size: 13px; color: #4d553d; font-weight: bold; }
+    .submit-btn { width: 100%; padding: 16px; background: #c0622a; color: white; border: none; border-radius: 10px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
+    .submit-btn:hover { background: #a0511f; }
+    .success-screen { display: none; text-align: center; background: white; border-radius: 10px; padding: 40px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .success-screen .check { font-size: 60px; margin-bottom: 16px; }
+    .success-screen h2 { color: #4d553d; font-size: 22px; margin-bottom: 12px; }
+    .numero { font-size: 28px; font-weight: bold; color: #4d553d; background: #e8ede8; padding: 12px 24px; border-radius: 10px; display: inline-block; margin: 16px 0; }
+    .retour-link { display: block; text-align: center; margin-top: 20px; color: #a6aa9e; font-size: 13px; text-decoration: none; }
+    .retour-link:hover { color: #4d553d; }
+    select option { padding: 8px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>BCEG</h1>
+  <p>Banque pour le Commerce et l'Entrepreneuriat du Gabon</p>
+</header>
+
+<div class="container">
+  <div class="intro-card">
+    <h2>📋 Deposer une reclamation</h2>
+    <p>Vous avez rencontre un probleme ? Decrivez-le ci-dessous. Notre equipe vous repondra dans les plus brefs delais. Vous pouvez egalement joindre un document justificatif.</p>
+  </div>
+
+  <form id="reclamationForm">
+    <div class="card">
+      <label>Votre nom complet *</label>
+      <input type="text" name="nom" placeholder="Ex : ONDO Jean-Baptiste" required>
+    </div>
+
+    <div class="card">
+      <label>Votre numero de telephone *</label>
+      <input type="tel" name="telephone" placeholder="Ex : 06 12 34 56" required>
+    </div>
+
+    <div class="card">
+      <label>Votre adresse email (optionnel)</label>
+      <input type="email" name="email" placeholder="Ex : votre@email.com">
+    </div>
+
+    <div class="card">
+      <label>Agence concernee *</label>
+      <select name="agence" required>
+        <option value="">-- Selectionnez votre agence --</option>
+        <option>Libreville Centre</option>
+        <option>Libreville Nord</option>
+        <option>Libreville Sud</option>
+        <option>Port-Gentil</option>
+        <option>Franceville</option>
+        <option>Oyem</option>
+        <option>Moanda</option>
+        <option>Lambarene</option>
+        <option>Autre</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <label>Categorie de la reclamation *</label>
+      <select name="categorie" required>
+        <option value="">-- Selectionnez une categorie --</option>
+        <option>Delai de traitement trop long</option>
+        <option>Erreur sur mon compte</option>
+        <option>Probleme avec un virement</option>
+        <option>Probleme avec ma carte bancaire</option>
+        <option>Probleme avec B-Online</option>
+        <option>Comportement du personnel</option>
+        <option>Probleme avec un credit</option>
+        <option>Frais non justifies</option>
+        <option>Autre</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <label>Description detaillee de votre reclamation *</label>
+      <textarea name="description" placeholder="Decrivez votre probleme avec le maximum de details : date, agence, type d'operation, ce qui s'est passe..." required></textarea>
+    </div>
+
+    <div class="card">
+      <label>Joindre un document (optionnel)</label>
+      <div class="upload-zone" onclick="document.getElementById('fichier').click()">
+        <div class="icon">📎</div>
+        <p>Cliquez pour ajouter un document</p>
+        <p style="font-size:12px; color:#aaa; margin-top:4px;">Formats acceptes : PDF, JPG, PNG (max 5 Mo)</p>
+      </div>
+      <input type="file" id="fichier" name="fichier" accept=".pdf,.jpg,.jpeg,.png" onchange="afficherFichier(this)">
+      <div class="file-preview" id="filePreview"></div>
+    </div>
+
+    <button type="submit" class="submit-btn">Envoyer ma reclamation</button>
+    <a href="javascript:history.back()" class="retour-link">← Retour au questionnaire</a>
+  </form>
+
+  <div class="success-screen" id="successScreen">
+    <div class="check">✅</div>
+    <h2>Reclamation enregistree !</h2>
+    <p>Votre reclamation a bien ete recue. Voici votre numero de suivi :</p>
+    <div class="numero" id="numeroSuivi">REC-000000</div>
+    <p>Conservez ce numero pour suivre l'avancement de votre reclamation.<br>Notre equipe vous contactera dans les <strong>48 heures</strong> ouvrables.</p>
+    <br>
+    <p style="color:#4d553d; font-weight:bold;">Merci de votre confiance.</p>
+  </div>
+</div>
+
+<script>
+  function afficherFichier(input) {
+    var preview = document.getElementById('filePreview');
+    if (input.files && input.files[0]) {
+      preview.textContent = '✓ Fichier selectionne : ' + input.files[0].name;
+    }
+  }
+
+  document.getElementById('reclamationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var numero = 'REC-' + Date.now().toString().slice(-6);
+    document.getElementById('numeroSuivi').textContent = numero;
+    document.getElementById('reclamationForm').style.display = 'none';
+    document.querySelector('.intro-card').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+    window.scrollTo(0, 0);
+  });
+</script>
+</body>
+</html>`);
+});
+
 // PAGE QUESTIONNAIRE CLIENT
 router.get('/:clientId', (req, res) => {
   const clientId = req.params.clientId;
@@ -285,162 +441,6 @@ router.post('/repondre', (req, res) => {
       res.json({ success: true, id: this.lastID });
     }
   );
-});
-
-// PAGE RECLAMATION
-router.get('/reclamation', (req, res) => {
-  res.send(`<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reclamation - BCEG</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; background: #f3f6f3; color: #2c2c2c; }
-    header { background: #4d553d; color: white; padding: 16px 20px; }
-    header h1 { font-size: 22px; font-weight: bold; }
-    header p { font-size: 12px; color: #c8d4c8; margin-top: 2px; }
-    .container { max-width: 620px; margin: 0 auto; padding: 20px 16px 40px; }
-    .intro-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; border-left: 5px solid #c0622a; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .intro-card h2 { color: #c0622a; font-size: 17px; margin-bottom: 8px; }
-    .intro-card p { color: #555; font-size: 14px; line-height: 1.5; }
-    .card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    label { display: block; font-weight: bold; font-size: 14px; color: #333; margin-bottom: 8px; }
-    input[type="text"], input[type="email"], input[type="tel"], select, textarea {
-      width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;
-      font-size: 14px; font-family: Arial, sans-serif; transition: border 0.2s;
-    }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: #4d553d; }
-    textarea { resize: vertical; min-height: 100px; }
-    .upload-zone { border: 2px dashed #a6aa9e; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.2s; background: #f9f9f7; }
-    .upload-zone:hover { border-color: #4d553d; background: #f3f6f3; }
-    .upload-zone p { color: #666; font-size: 14px; margin-top: 8px; }
-    .upload-zone .icon { font-size: 36px; }
-    input[type="file"] { display: none; }
-    .file-preview { margin-top: 10px; font-size: 13px; color: #4d553d; font-weight: bold; }
-    .submit-btn { width: 100%; padding: 16px; background: #c0622a; color: white; border: none; border-radius: 10px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
-    .submit-btn:hover { background: #a0511f; }
-    .success-screen { display: none; text-align: center; background: white; border-radius: 10px; padding: 40px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .success-screen .check { font-size: 60px; margin-bottom: 16px; }
-    .success-screen h2 { color: #4d553d; font-size: 22px; margin-bottom: 12px; }
-    .numero { font-size: 28px; font-weight: bold; color: #4d553d; background: #e8ede8; padding: 12px 24px; border-radius: 10px; display: inline-block; margin: 16px 0; }
-    .retour-link { display: block; text-align: center; margin-top: 20px; color: #a6aa9e; font-size: 13px; text-decoration: none; }
-    .retour-link:hover { color: #4d553d; }
-    select option { padding: 8px; }
-  </style>
-</head>
-<body>
-<header>
-  <h1>BCEG</h1>
-  <p>Banque pour le Commerce et l'Entrepreneuriat du Gabon</p>
-</header>
-
-<div class="container">
-  <div class="intro-card">
-    <h2>📋 Deposer une reclamation</h2>
-    <p>Vous avez rencontre un probleme ? Decrivez-le ci-dessous. Notre equipe vous repondra dans les plus brefs delais. Vous pouvez egalement joindre un document justificatif.</p>
-  </div>
-
-  <form id="reclamationForm">
-    <div class="card">
-      <label>Votre nom complet *</label>
-      <input type="text" name="nom" placeholder="Ex : ONDO Jean-Baptiste" required>
-    </div>
-
-    <div class="card">
-      <label>Votre numero de telephone *</label>
-      <input type="tel" name="telephone" placeholder="Ex : 06 12 34 56" required>
-    </div>
-
-    <div class="card">
-      <label>Votre adresse email (optionnel)</label>
-      <input type="email" name="email" placeholder="Ex : votre@email.com">
-    </div>
-
-    <div class="card">
-      <label>Agence concernee *</label>
-      <select name="agence" required>
-        <option value="">-- Selectionnez votre agence --</option>
-        <option>Libreville Centre</option>
-        <option>Libreville Nord</option>
-        <option>Libreville Sud</option>
-        <option>Port-Gentil</option>
-        <option>Franceville</option>
-        <option>Oyem</option>
-        <option>Moanda</option>
-        <option>Lambarene</option>
-        <option>Autre</option>
-      </select>
-    </div>
-
-    <div class="card">
-      <label>Categorie de la reclamation *</label>
-      <select name="categorie" required>
-        <option value="">-- Selectionnez une categorie --</option>
-        <option>Delai de traitement trop long</option>
-        <option>Erreur sur mon compte</option>
-        <option>Probleme avec un virement</option>
-        <option>Probleme avec ma carte bancaire</option>
-        <option>Probleme avec B-Online</option>
-        <option>Comportement du personnel</option>
-        <option>Probleme avec un credit</option>
-        <option>Frais non justifies</option>
-        <option>Autre</option>
-      </select>
-    </div>
-
-    <div class="card">
-      <label>Description detaillee de votre reclamation *</label>
-      <textarea name="description" placeholder="Decrivez votre probleme avec le maximum de details : date, agence, type d'operation, ce qui s'est passe..." required></textarea>
-    </div>
-
-    <div class="card">
-      <label>Joindre un document (optionnel)</label>
-      <div class="upload-zone" onclick="document.getElementById('fichier').click()">
-        <div class="icon">📎</div>
-        <p>Cliquez pour ajouter un document</p>
-        <p style="font-size:12px; color:#aaa; margin-top:4px;">Formats acceptes : PDF, JPG, PNG (max 5 Mo)</p>
-      </div>
-      <input type="file" id="fichier" name="fichier" accept=".pdf,.jpg,.jpeg,.png" onchange="afficherFichier(this)">
-      <div class="file-preview" id="filePreview"></div>
-    </div>
-
-    <button type="submit" class="submit-btn">Envoyer ma reclamation</button>
-    <a href="javascript:history.back()" class="retour-link">← Retour au questionnaire</a>
-  </form>
-
-  <div class="success-screen" id="successScreen">
-    <div class="check">✅</div>
-    <h2>Reclamation enregistree !</h2>
-    <p>Votre reclamation a bien ete recue. Voici votre numero de suivi :</p>
-    <div class="numero" id="numeroSuivi">REC-000000</div>
-    <p>Conservez ce numero pour suivre l'avancement de votre reclamation.<br>Notre equipe vous contactera dans les <strong>48 heures</strong> ouvrables.</p>
-    <br>
-    <p style="color:#4d553d; font-weight:bold;">Merci de votre confiance.</p>
-  </div>
-</div>
-
-<script>
-  function afficherFichier(input) {
-    var preview = document.getElementById('filePreview');
-    if (input.files && input.files[0]) {
-      preview.textContent = '✓ Fichier selectionne : ' + input.files[0].name;
-    }
-  }
-
-  document.getElementById('reclamationForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    var numero = 'REC-' + Date.now().toString().slice(-6);
-    document.getElementById('numeroSuivi').textContent = numero;
-    document.getElementById('reclamationForm').style.display = 'none';
-    document.querySelector('.intro-card').style.display = 'none';
-    document.getElementById('successScreen').style.display = 'block';
-    window.scrollTo(0, 0);
-  });
-</script>
-</body>
-</html>`);
 });
 
 module.exports = router;
