@@ -508,5 +508,7 @@ router.post('/repondre', (req, res) => {
     }
   );
 });
-
+// SERVIR LES FICHIERS DE RECLAMATION
+router.get('/fichier/:filename', (req, res) => {
+  const filePath = path.join(__dirname, '
 module.exports = router;
