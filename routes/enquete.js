@@ -170,14 +170,13 @@ router.get('/reclamation', (req, res) => {
       <label>Agence concernee *</label>
       <select name="agence" required>
         <option value="">-- Selectionnez votre agence --</option>
-        <option>Libreville Centre</option>
-        <option>Libreville Nord</option>
-        <option>Libreville Sud</option>
-        <option>Port-Gentil</option>
-        <option>Franceville</option>
-        <option>Oyem</option>
-        <option>Moanda</option>
-        <option>Lambarene</option>
+        <option>Agence Okoume (Siege)</option>
+        <option>Agence Movingui</option>
+        <option>Agence Bilinga</option>
+        <option>Point Cash Tali</option>
+        <option>Point Cash Akanda</option>
+        <option>Bureau Ozigo (Port-Gentil)</option>
+        <option>Agence Azobe</option>
         <option>Autre</option>
       </select>
     </div>
