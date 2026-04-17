@@ -511,8 +511,6 @@ router.post('/repondre', (req, res) => {
 
 
 // SERVIR LES FICHIERS DE RECLAMATION
-const path = require('path');
-const fs = require('fs');
 router.get('/fichier/:filename', function(req, res) {
   var filePath = path.join(__dirname, '..', 'uploads', req.params.filename);
   if (fs.existsSync(filePath)) {
