@@ -207,7 +207,7 @@ router.get('/:clientId', (req, res) => {
 
     <button type="submit" class="submit-btn">Envoyer mon avis</button>
     <p class="note-small">Vos reponses sont confidentielles et utilisees uniquement pour ameliorer nos services.</p>
-    <a href="/reclamation" class="reclamation-link">Vous avez une reclamation ? Cliquez ici</a>
+    <a href="/enquete/reclamation" class="reclamation-link">Vous avez une reclamation ? Cliquez ici</a>
   </form>
 
   <div class="success-screen" id="successScreen">
