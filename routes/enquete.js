@@ -404,6 +404,13 @@ router.get('/:clientId', (req, res) => {
     <span class="badge-type">${questionnaire.icon} ${questionnaire.titre}</span>
   </div>
 
+  <!-- BOUTON RECLAMATION EN HAUT - VISIBLE DES L'OUVERTURE -->
+  <a href="/enquete/reclamation" class="reclamation-banner">
+    <span class="rec-icon">⚠️</span>
+    Vous avez une reclamation ?
+    <span class="rec-sub">Cliquez ici pour la deposer — Notre equipe vous repond sous 48h</span>
+  </a>
+
   <form id="enqueteForm">
     <input type="hidden" name="enquete_id" value="${client.operation_id || 0}">
     ${questionsHTML}
