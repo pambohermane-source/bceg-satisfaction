@@ -1,20 +1,23 @@
 {
   "name": "bceg-satisfaction",
   "version": "1.0.0",
-  "description": "",
+  "description": "Systeme de gestion des enquetes de satisfaction client BCEG",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "npm rebuild sqlite3 --build-from-source"
   },
   "keywords": [],
-  "author": "",
+  "author": "PAMBO Taty Hermane - BCEG",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "africastalking": "^0.7.9",
     "express": "^5.2.1",
+    "multer": "^1.4.5-lts.1",
     "node-cron": "^4.2.1",
-    "nodemailer": "^8.0.5",
+    "nodemailer": "^6.8.0",
     "sqlite3": "^6.0.1",
     "xlsx": "^0.18.5"
   }
