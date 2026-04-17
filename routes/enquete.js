@@ -1,308 +1,349 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/database');
+const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-router.get('/', function(req, res) {
-  db.all(`SELECT r.*, o.type_operation, c.nom as client_nom, c.prenom as client_prenom, a.nom as agence_nom
-          FROM reponses r
-          LEFT JOIN enquetes e ON e.id = r.enquete_id
-          LEFT JOIN operations o ON o.id = e.operation_id
-          LEFT JOIN clients c ON c.id = o.client_id
-          LEFT JOIN agences a ON a.id = c.agence_id
-          ORDER BY r.date_reponse DESC`, [], function(err, reponses) {
-    reponses = reponses || [];
-    db.all("SELECT * FROM reclamations ORDER BY date_reception DESC", [], function(err2, reclamations) {
-      reclamations = reclamations || [];
+const uploadDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-      var total = reponses.length;
-      function moy(field) {
-        if (total === 0) return '0.0';
-        return (reponses.reduce(function(s,r){return s+(r[field]||0);},0)/total).toFixed(1);
-      }
-      var promoteurs = reponses.filter(function(r){return r.score_nps>=9;}).length;
-      var detracteurs = reponses.filter(function(r){return r.score_nps<=6;}).length;
-      var neutres = reponses.filter(function(r){return r.score_nps>=7&&r.score_nps<=8;}).length;
-      var nps = total>0?Math.round(((promoteurs-detracteurs)/total)*100):0;
-      var recNouv = reclamations.filter(function(r){return r.statut==='Nouvelle';}).length;
-      var recEnCours = reclamations.filter(function(r){return r.statut==='En cours';}).length;
-      var recResolue = reclamations.filter(function(r){return r.statut==='Resolue';}).length;
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random()*1E9) + path.extname(file.originalname))
+});
+const upload = multer({ storage, limits: { fileSize: 5*1024*1024 }, fileFilter: (req, file, cb) => {
+  const allowed = ['.pdf','.jpg','.jpeg','.png'];
+  allowed.includes(path.extname(file.originalname).toLowerCase()) ? cb(null,true) : cb(new Error('Format non accepte'));
+}});
 
-      // Stats par agence
-      var agences = {};
-      reponses.forEach(function(r) {
-        var ag = r.agence_nom || 'Non renseigne';
-        if (!agences[ag]) agences[ag] = {total:0, somme:0};
-        agences[ag].total++;
-        agences[ag].somme += (r.note_globale||0);
-      });
+const questionnaires = {
+  'credit': { titre: 'Votre demande de credit', icon: '💼', questions: [
+    { id: 'note_accueil', label: "Comment evaluez-vous l'accueil de votre conseiller ?" },
+    { id: 'note_attente', label: "Etes-vous satisfait(e) du delai de traitement de votre dossier ?" },
+    { id: 'note_conseiller', label: "La clarte des informations fournies etait-elle satisfaisante ?" },
+    { id: 'note_traitement', label: "Le resultat obtenu correspond-il a vos attentes ?" },
+    { id: 'note_globale', label: "Quelle note globale donnez-vous a cette experience ?" }
+  ]},
+  'ouverture': { titre: 'Votre ouverture de compte', icon: '🏦', questions: [
+    { id: 'note_accueil', label: "Comment evaluez-vous la qualite de l'accueil ?" },
+    { id: 'note_attente', label: "Le delai de traitement de votre dossier etait-il satisfaisant ?" },
+    { id: 'note_conseiller', label: "Les explications sur les produits etaient-elles claires ?" },
+    { id: 'note_traitement', label: "La procedure d'ouverture etait-elle simple et rapide ?" },
+    { id: 'note_globale', label: "Quelle note globale donnez-vous a cette experience ?" }
+  ]},
+  'gestionnaire': { titre: 'Votre echange avec votre gestionnaire', icon: '🤝', questions: [
+    { id: 'note_accueil', label: "Votre gestionnaire etait-il disponible et a l'ecoute ?" },
+    { id: 'note_conseiller', label: "Les conseils prodigues etaient-ils pertinents ?" },
+    { id: 'note_traitement', label: "Votre demande a-t-elle ete traitee de maniere satisfaisante ?" },
+    { id: 'note_globale', label: "Quelle note globale donnez-vous a cet echange ?" }
+  ]},
+  'digital': { titre: 'Vos services digitaux BCEG', icon: '📱', questions: [
+    { id: 'note_accueil', label: "La plateforme est-elle facile a utiliser ?" },
+    { id: 'note_attente', label: "La plateforme est-elle disponible et rapide ?" },
+    { id: 'note_conseiller', label: "En cas de probleme, le support etait-il efficace ?" },
+    { id: 'note_applications', label: "Les fonctionnalites repondent-elles a vos besoins ?" },
+    { id: 'note_globale', label: "Quelle note globale donnez-vous aux services digitaux BCEG ?" }
+  ]},
+  'default': { titre: 'Votre visite en agence', icon: '⭐', questions: [
+    { id: 'note_accueil', label: "Comment evaluez-vous l'accueil a votre arrivee en agence ?" },
+    { id: 'note_attente', label: "Etes-vous satisfait(e) du temps d'attente ?" },
+    { id: 'note_conseiller', label: "Comment evaluez-vous la qualite de votre conseiller ?" },
+    { id: 'note_traitement', label: "Votre operation a-t-elle ete traitee rapidement et correctement ?" },
+    { id: 'note_applications', label: "Etes-vous satisfait(e) des services numeriques de la BCEG ?" },
+    { id: 'note_globale', label: "Quelle note globale donnez-vous a votre experience aujourd'hui ?" }
+  ]}
+};
 
-      var rowsSat = reponses.slice(0,20).map(function(r) {
-        var npsClass = r.score_nps>=9?'pro':r.score_nps>=7?'neu':'det';
-        var npsLbl = r.score_nps>=9?'Pro':r.score_nps>=7?'Neutre':'Det';
-        var npsColor = r.score_nps>=9?'#27ae60':r.score_nps>=7?'#f39c12':'#e74c3c';
-        var noteColor = function(n) { return n>=4?'#27ae60':n>=3?'#f39c12':'#e74c3c'; };
-        return '<tr>'
-          +'<td>'+(r.date_reponse||'-').toString().substring(0,10)+'</td>'
-          +'<td><b>'+(r.client_prenom||'Demo')+' '+(r.client_nom||'')+'</b></td>'
-          +'<td>'+(r.agence_nom||'-')+'</td>'
-          +'<td>'+(r.type_operation||'-')+'</td>'
-          +'<td style="color:'+noteColor(r.note_accueil)+';font-weight:bold;">'+(r.note_accueil||'-')+'/5</td>'
-          +'<td style="color:'+noteColor(r.note_attente)+';font-weight:bold;">'+(r.note_attente||'-')+'/5</td>'
-          +'<td style="color:'+noteColor(r.note_conseiller)+';font-weight:bold;">'+(r.note_conseiller||'-')+'/5</td>'
-          +'<td style="color:'+noteColor(r.note_traitement)+';font-weight:bold;">'+(r.note_traitement||'-')+'/5</td>'
-          +'<td style="color:'+noteColor(r.note_globale)+';font-weight:bold;">'+(r.note_globale||'-')+'/5</td>'
-          +'<td><span style="background:'+(npsColor)+'22;color:'+npsColor+';padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold;">'+(r.score_nps!==null?r.score_nps:'-')+' '+npsLbl+'</span></td>'
-          +'<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(r.commentaire||'-')+'</td>'
-          +'</tr>';
-      }).join('');
+function detecterType(t) {
+  if (!t) return 'default';
+  t = t.toLowerCase();
+  if (t.includes('credit')||t.includes('pret')||t.includes('financement')) return 'credit';
+  if (t.includes('ouverture')||t.includes('compte')) return 'ouverture';
+  if (t.includes('gestionnaire')||t.includes('conseiller')||t.includes('rendez')) return 'gestionnaire';
+  if (t.includes('digital')||t.includes('online')||t.includes('b-online')||t.includes('mobile')) return 'digital';
+  return 'default';
+}
 
-      var rowsRec = reclamations.map(function(r) {
-        var fichierBtn = r.fichier_path ? '<a href="/enquete/fichier/'+r.fichier_path+'" target="_blank" style="background:#4d553d;color:white;padding:3px 8px;border-radius:6px;font-size:11px;text-decoration:none;">Voir</a>' : '<span style="color:#ccc;">-</span>';
-        var statutColor = r.statut==='Nouvelle'?'#e74c3c':r.statut==='En cours'?'#f39c12':'#27ae60';
-        return '<tr>'
-          +'<td><b style="color:#4d553d;">'+r.numero_suivi+'</b></td>'
-          +'<td>'+(r.date_reception||'-').toString().substring(0,10)+'</td>'
-          +'<td><b>'+r.nom_client+'</b></td>'
-          +'<td>'+(r.telephone||'-')+'</td>'
-          +'<td>'+(r.email||'-')+'</td>'
-          +'<td>'+(r.agence||'-')+'</td>'
-          +'<td>'+(r.categorie||'-')+'</td>'
-          +'<td style="max-width:180px;" title="'+(r.description||'')+'">'+(r.description||'-').substring(0,60)+(r.description&&r.description.length>60?'...':'')+'</td>'
-          +'<td>'+fichierBtn+'</td>'
-          +'<td><select onchange="maj('+r.id+',this.value)" style="padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:11px;color:'+statutColor+';font-weight:bold;">'
-          +'<option style="color:#e74c3c;" '+(r.statut==='Nouvelle'?'selected':'')+'>Nouvelle</option>'
-          +'<option style="color:#f39c12;" '+(r.statut==='En cours'?'selected':'')+'>En cours</option>'
-          +'<option style="color:#27ae60;" '+(r.statut==='Resolue'?'selected':'')+'>Resolue</option>'
-          +'</select></td>'
-          +'</tr>';
-      }).join('');
-
-      var agenceRows = Object.entries(agences).map(function(entry) {
-        var nom = entry[0]; var data = entry[1];
-        var moy2 = (data.somme/data.total).toFixed(1);
-        var color = parseFloat(moy2)>=4?'#27ae60':parseFloat(moy2)>=3?'#f39c12':'#e74c3c';
-        return '<div style="display:flex;align-items:center;margin-bottom:10px;">'
-          +'<div style="width:200px;font-size:13px;color:#333;flex-shrink:0;">'+nom+'</div>'
-          +'<div style="flex:1;background:#e8ede8;border-radius:6px;height:12px;margin:0 12px;">'
-          +'<div style="height:12px;border-radius:6px;background:'+color+';width:'+(parseFloat(moy2)/5*100)+'%;"></div></div>'
-          +'<div style="font-size:13px;font-weight:bold;color:'+color+';width:70px;text-align:right;">'+moy2+'/5 <span style="color:#aaa;font-size:11px;">('+data.total+')</span></div>'
-          +'</div>';
-      }).join('');
-
-      res.send(`<!DOCTYPE html>
+// =====================
+// PAGE RECLAMATION
+// =====================
+router.get('/reclamation', (req, res) => {
+  res.send(`<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Dashboard BCEG — Satisfaction Client</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Reclamation - BCEG</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,sans-serif;background:#f3f6f3;color:#2c2c2c;}
-header{background:#4d553d;color:white;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;}
-header h1{font-size:22px;font-weight:bold;}
-header p{font-size:12px;color:#c8d4c8;}
-.tabs{background:#3a4130;display:flex;padding:0 28px;gap:4px;}
-.tab{padding:14px 22px;color:#a6aa9e;cursor:pointer;font-size:14px;font-weight:bold;border-bottom:3px solid transparent;transition:all 0.2s;}
-.tab:hover{color:white;}
-.tab.active{color:white;border-bottom-color:#a6aa9e;}
-.container{max-width:1200px;margin:0 auto;padding:24px 16px;}
-.tab-content{display:none;}
-.tab-content.active{display:block;}
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;}
-.kpi{background:white;border-radius:10px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:4px solid #4d553d;}
-.kpi.or{border-top-color:#c0622a;}
-.kpi.ro{border-top-color:#e74c3c;}
-.kpi.ve{border-top-color:#27ae60;}
-.kpi .lb{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
-.kpi .vl{font-size:34px;font-weight:bold;color:#4d553d;}
-.kpi.or .vl{color:#c0622a;}
-.kpi.ro .vl{color:#e74c3c;}
-.kpi.ve .vl{color:#27ae60;}
-.kpi .sb{font-size:12px;color:#888;margin-top:4px;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
-@media(max-width:800px){.grid2{grid-template-columns:1fr;}}
-.card{background:white;border-radius:10px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.07);margin-bottom:20px;}
-.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.card-header h3{font-size:15px;color:#4d553d;font-weight:bold;}
-.export-btn{background:#4d553d;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-block;}
-.export-btn:hover{background:#3a4130;}
-.nps-box{text-align:center;}
-.nps-sc{font-size:70px;font-weight:bold;color:#4d553d;line-height:1;}
-.nps-bars{display:flex;gap:10px;margin-top:18px;}
-.nps-b{flex:1;text-align:center;}
-.nps-b .nb{font-size:22px;font-weight:bold;}
-.nps-b .lb2{font-size:11px;color:#888;margin-top:4px;}
-.pro{color:#27ae60;}
-.neu{color:#f39c12;}
-.det{color:#e74c3c;}
-table{width:100%;border-collapse:collapse;font-size:12px;}
-th{background:#4d553d;color:white;padding:10px 10px;text-align:left;white-space:nowrap;}
-td{padding:9px 10px;border-bottom:1px solid #eee;vertical-align:middle;}
-tr:hover td{background:#f9f9f7;}
-.alerte{background:#fde8e8;border-left:4px solid #e74c3c;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#c0392b;}
-.empty{text-align:center;color:#aaa;padding:40px;font-size:14px;}
+*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;background:#f3f6f3;color:#2c2c2c;}
+header{background:#4d553d;color:white;padding:16px 20px;}header h1{font-size:22px;font-weight:bold;}header p{font-size:12px;color:#c8d4c8;margin-top:2px;}
+.container{max-width:620px;margin:0 auto;padding:20px 16px 40px;}
+.intro-card{background:white;border-radius:10px;padding:20px;margin-bottom:20px;border-left:5px solid #c0622a;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+.intro-card h2{color:#c0622a;font-size:17px;margin-bottom:8px;}.intro-card p{color:#555;font-size:14px;line-height:1.5;}
+.card{background:white;border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+label{display:block;font-weight:bold;font-size:14px;color:#333;margin-bottom:8px;}
+input[type="text"],input[type="email"],input[type="tel"],select,textarea{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:14px;font-family:Arial,sans-serif;transition:border 0.2s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#4d553d;}textarea{resize:vertical;min-height:100px;}
+.upload-zone{border:2px dashed #a6aa9e;border-radius:8px;padding:30px;text-align:center;cursor:pointer;background:#f9f9f7;}
+.upload-zone:hover{border-color:#4d553d;background:#f3f6f3;}.upload-zone .icon{font-size:36px;}.upload-zone p{color:#666;font-size:14px;margin-top:8px;}
+input[type="file"]{display:none;}.file-preview{margin-top:10px;font-size:13px;color:#4d553d;font-weight:bold;}
+.submit-btn{width:100%;padding:16px;background:#c0622a;color:white;border:none;border-radius:10px;font-size:17px;font-weight:bold;cursor:pointer;margin-top:8px;}
+.submit-btn:hover{background:#a0511f;}
+.retour-link{display:block;text-align:center;margin-top:16px;color:#a6aa9e;font-size:13px;text-decoration:none;}
+.retour-link:hover{color:#4d553d;}
+.success-screen{display:none;text-align:center;background:white;border-radius:10px;padding:40px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+.numero{font-size:26px;font-weight:bold;color:#4d553d;background:#e8ede8;padding:12px 24px;border-radius:10px;display:inline-block;margin:16px 0;letter-spacing:2px;}
 </style>
 </head>
 <body>
-<header>
-  <div>
-    <h1>BCEG — Satisfaction Client</h1>
-    <p>Tableau de bord — Mis a jour en temps reel</p>
-  </div>
-  <div style="text-align:right;font-size:12px;color:#c8d4c8;">
-    <div style="font-size:16px;font-weight:bold;">${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</div>
-    <div>Banque pour le Commerce et l'Entrepreneuriat du Gabon</div>
-  </div>
-</header>
-
-<div class="tabs">
-  <div class="tab active" onclick="showTab('sat',this)">📊 Satisfaction Client</div>
-  <div class="tab" onclick="showTab('rec',this)">⚠️ Reclamations <span style="background:#e74c3c;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">${recNouv}</span></div>
-</div>
-
+<header><h1>BCEG</h1><p>Banque pour le Commerce et l'Entrepreneuriat du Gabon</p></header>
 <div class="container">
-
-  <!-- ONGLET SATISFACTION -->
-  <div class="tab-content active" id="tab-sat">
-    ${recNouv>0?'<div class="alerte"><b>'+recNouv+' nouvelle(s) reclamation(s) en attente</b> — Consultez l\'onglet Reclamations.</div>':''}
-
-    <div class="kpi-grid">
-      <div class="kpi"><div class="lb">Reponses recues</div><div class="vl">${total}</div><div class="sb">enquetes completees</div></div>
-      <div class="kpi"><div class="lb">Satisfaction globale</div><div class="vl">${moy('note_globale')}<span style="font-size:18px;">/5</span></div><div class="sb">note moyenne</div></div>
-      <div class="kpi ${nps>=30?'ve':nps>=0?'or':'ro'}"><div class="lb">Score NPS</div><div class="vl">${nps}</div><div class="sb">Net Promoter Score</div></div>
-      <div class="kpi ro"><div class="lb">Reclamations</div><div class="vl">${reclamations.length}</div><div class="sb">${recNouv} nouvelle(s)</div></div>
-    </div>
-
-    <div class="grid2">
-      <div class="card">
-        <div class="card-header"><h3>📈 Notes moyennes par critere</h3></div>
-        ${[['Accueil en agence','note_accueil'],['Temps d\'attente','note_attente'],['Qualite conseiller','note_conseiller'],['Traitement operation','note_traitement'],['Services digitaux','note_applications'],['Satisfaction globale','note_globale']].map(function(c){
-          var v=parseFloat(moy(c[1])); var col=v>=4?'#27ae60':v>=3?'#f39c12':'#e74c3c';
-          return '<div style="display:flex;align-items:center;margin-bottom:10px;"><div style="width:165px;font-size:13px;color:#555;flex-shrink:0;">'+c[0]+'</div><div style="flex:1;background:#e8ede8;border-radius:6px;height:10px;margin:0 10px;"><div style="height:10px;border-radius:6px;background:'+col+';width:'+(v/5*100)+'%;"></div></div><div style="font-size:13px;font-weight:bold;color:'+col+';width:36px;text-align:right;">'+moy(c[1])+'/5</div></div>';
-        }).join('')}
-      </div>
-
-      <div class="card nps-box">
-        <div class="card-header"><h3>🎯 NPS — Net Promoter Score</h3></div>
-        <div class="nps-sc">${nps}</div>
-        <div style="font-size:12px;color:#888;margin-top:4px;">Score NPS</div>
-        <div class="nps-bars">
-          <div class="nps-b"><div class="nb pro">${promoteurs}</div><div class="lb2">Promoteurs<br>9-10</div></div>
-          <div class="nps-b"><div class="nb neu">${neutres}</div><div class="lb2">Neutres<br>7-8</div></div>
-          <div class="nps-b"><div class="nb det">${detracteurs}</div><div class="lb2">Detracteurs<br>0-6</div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        <h3>🏦 Satisfaction par agence</h3>
-      </div>
-      ${Object.keys(agences).length===0?'<div class="empty">Aucune donnee disponible</div>':agenceRows}
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        <h3>📋 Historique des questionnaires</h3>
-        <a href="/dashboard/export-satisfaction" class="export-btn">⬇️ Exporter Excel</a>
-      </div>
-      ${total===0?'<div class="empty">Aucune reponse pour l\'instant</div>':
-      '<div style="overflow-x:auto;"><table><thead><tr><th>Date</th><th>Client</th><th>Agence</th><th>Operation</th><th>Accueil</th><th>Attente</th><th>Conseiller</th><th>Traitement</th><th>Global</th><th>NPS</th><th>Commentaire</th></tr></thead><tbody>'+rowsSat+'</tbody></table></div>'}
-    </div>
+  <div class="intro-card">
+    <h2>Deposer une reclamation</h2>
+    <p>Vous avez rencontre un probleme ? Decrivez-le ci-dessous. Notre equipe vous repondra dans les plus brefs delais.</p>
   </div>
-
-  <!-- ONGLET RECLAMATIONS -->
-  <div class="tab-content" id="tab-rec">
-    <div class="kpi-grid">
-      <div class="kpi ro"><div class="lb">Nouvelles</div><div class="vl">${recNouv}</div><div class="sb">a traiter</div></div>
-      <div class="kpi or"><div class="lb">En cours</div><div class="vl">${recEnCours}</div><div class="sb">en traitement</div></div>
-      <div class="kpi ve"><div class="lb">Resolues</div><div class="vl">${recResolue}</div><div class="sb">terminees</div></div>
-      <div class="kpi"><div class="lb">Total</div><div class="vl">${reclamations.length}</div><div class="sb">reclamations</div></div>
+  <form id="reclamationForm" enctype="multipart/form-data">
+    <div class="card"><label>Votre nom complet *</label><input type="text" name="nom" placeholder="Ex : ONDO Jean-Baptiste" required></div>
+    <div class="card"><label>Votre numero de telephone *</label><input type="tel" name="telephone" placeholder="Ex : 06 12 34 56" required></div>
+    <div class="card"><label>Votre adresse email (optionnel)</label><input type="email" name="email" placeholder="Ex : votre@email.com"></div>
+    <div class="card"><label>Agence concernee *</label>
+      <select name="agence" required>
+        <option value="">-- Selectionnez votre agence --</option>
+        <option>Agence Okoume (Siege)</option><option>Agence Movingui</option><option>Agence Bilinga</option>
+        <option>Point Cash Tali</option><option>Point Cash Akanda</option><option>Bureau Ozigo (Port-Gentil)</option>
+        <option>Agence Azobe</option><option>Autre</option>
+      </select>
     </div>
-
-    <div class="card">
-      <div class="card-header">
-        <h3>📋 Liste des reclamations</h3>
-        <a href="/dashboard/export-reclamations" class="export-btn">⬇️ Exporter Excel</a>
+    <div class="card"><label>Categorie de la reclamation *</label>
+      <select name="categorie" required>
+        <option value="">-- Selectionnez une categorie --</option>
+        <option>Delai de traitement trop long</option><option>Erreur sur mon compte</option>
+        <option>Probleme avec un virement</option><option>Probleme avec ma carte bancaire</option>
+        <option>Probleme avec B-Online</option><option>Comportement du personnel</option>
+        <option>Probleme avec un credit</option><option>Frais non justifies</option><option>Autre</option>
+      </select>
+    </div>
+    <div class="card"><label>Description detaillee *</label>
+      <textarea name="description" placeholder="Decrivez votre probleme avec le maximum de details..." required></textarea>
+    </div>
+    <div class="card"><label>Joindre un document (optionnel)</label>
+      <div class="upload-zone" onclick="document.getElementById('fichier').click()">
+        <div class="icon">📎</div><p>Cliquez pour ajouter un document</p>
+        <p style="font-size:12px;color:#aaa;margin-top:4px;">PDF, JPG, PNG - max 5 Mo</p>
       </div>
-      ${reclamations.length===0?'<div class="empty">Aucune reclamation pour l\'instant</div>':
-      '<div style="overflow-x:auto;"><table><thead><tr><th>N° Suivi</th><th>Date</th><th>Client</th><th>Telephone</th><th>Email</th><th>Agence</th><th>Categorie</th><th>Description</th><th>Fichier</th><th>Statut</th></tr></thead><tbody>'+rowsRec+'</tbody></table></div>'}
+      <input type="file" id="fichier" name="fichier" accept=".pdf,.jpg,.jpeg,.png" onchange="afficherFichier(this)">
+      <div class="file-preview" id="filePreview"></div>
     </div>
+    <button type="submit" class="submit-btn">Envoyer ma reclamation</button>
+    <a href="javascript:history.back()" class="retour-link">← Retour au questionnaire</a>
+  </form>
+  <div class="success-screen" id="successScreen">
+    <div style="font-size:60px;margin-bottom:16px;">✅</div>
+    <h2 style="color:#4d553d;font-size:22px;margin-bottom:12px;">Reclamation enregistree !</h2>
+    <p style="color:#555;font-size:15px;">Votre reclamation a bien ete recue. Voici votre numero de suivi :</p>
+    <div class="numero" id="numeroSuivi"></div>
+    <p style="color:#555;font-size:15px;">Notre equipe vous contactera dans les <strong>48 heures</strong> ouvrables.</p>
+    <br><p style="color:#4d553d;font-weight:bold;">Merci de votre confiance.</p>
   </div>
-
 </div>
-
 <script>
-function showTab(name,el){
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
-  document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active');});
-  el.classList.add('active');
-  document.getElementById('tab-'+name).classList.add('active');
+function afficherFichier(input) {
+  if (input.files && input.files[0]) document.getElementById('filePreview').textContent = 'Fichier selectionne : ' + input.files[0].name;
 }
-function maj(id,statut){
-  fetch('/dashboard/statut',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,statut:statut})});
-}
-setTimeout(function(){location.reload();},60000);
-</script>
-</body>
-</html>`);
-    });
+document.getElementById('reclamationForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var formData = new FormData(e.target);
+  fetch('/enquete/reclamation/soumettre', { method: 'POST', body: formData })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    document.getElementById('numeroSuivi').textContent = data.numero || 'REC-000000';
+    e.target.style.display = 'none';
+    document.querySelector('.intro-card').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+    window.scrollTo(0,0);
+  }).catch(function() {
+    document.getElementById('numeroSuivi').textContent = 'REC-' + Date.now().toString().slice(-6);
+    e.target.style.display = 'none';
+    document.querySelector('.intro-card').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
   });
 });
+</script>
+</body></html>`);
+});
 
-// CHANGER STATUT RECLAMATION
-router.post('/statut', function(req, res) {
-  db.run("UPDATE reclamations SET statut=?, date_traitement=datetime('now') WHERE id=?",
-    [req.body.statut, req.body.id],
+// SOUMISSION RECLAMATION
+router.post('/reclamation/soumettre', upload.single('fichier'), (req, res) => {
+  const { nom, telephone, email, agence, categorie, description } = req.body;
+  const numero = 'REC-' + Date.now().toString().slice(-6);
+  const fichierNom = req.file ? req.file.originalname : null;
+  const fichierPath = req.file ? req.file.filename : null;
+  db.run(`INSERT INTO reclamations (numero_suivi,nom_client,telephone,email,agence,categorie,description,fichier_nom,fichier_path) VALUES (?,?,?,?,?,?,?,?,?)`,
+    [numero,nom,telephone,email||'',agence,categorie,description,fichierNom,fichierPath],
     function(err) {
-      if(err) return res.status(500).json({error:'Erreur'});
-      res.json({success:true});
+      if (err) return res.status(500).json({ error: 'Erreur', numero: 'REC-'+Date.now().toString().slice(-6) });
+      res.json({ success: true, numero, id: this.lastID });
     }
   );
 });
 
-// EXPORT SATISFACTION CSV
-router.get('/export-satisfaction', function(req, res) {
-  db.all(`SELECT r.date_reponse, c.nom, c.prenom, a.nom as agence, o.type_operation,
-          r.note_accueil, r.note_attente, r.note_conseiller, r.note_traitement,
-          r.note_applications, r.note_globale, r.score_nps, r.commentaire
-          FROM reponses r
-          LEFT JOIN enquetes e ON e.id=r.enquete_id
-          LEFT JOIN operations o ON o.id=e.operation_id
-          LEFT JOIN clients c ON c.id=o.client_id
+// SERVIR LES FICHIERS
+router.get('/fichier/:filename', (req, res) => {
+  const filePath = path.join(__dirname, '..', 'uploads', req.params.filename);
+  if (fs.existsSync(filePath)) res.sendFile(filePath);
+  else res.status(404).send('Fichier non trouve');
+});
+
+// =====================
+// PAGE QUESTIONNAIRE
+// =====================
+router.get('/:clientId', (req, res) => {
+  db.get(`SELECT c.*, o.id as operation_id, o.type_operation, a.nom as agence_nom
+          FROM clients c
+          LEFT JOIN operations o ON o.client_id=c.id
           LEFT JOIN agences a ON a.id=c.agence_id
-          ORDER BY r.date_reponse DESC`, [], function(err, rows) {
-    rows = rows || [];
-    var csv = 'Date,Nom,Prenom,Agence,Operation,Accueil,Attente,Conseiller,Traitement,Services digitaux,Global,NPS,Commentaire\n';
-    rows.forEach(function(r) {
-      csv += [(r.date_reponse||'').toString().substring(0,10), r.nom||'', r.prenom||'', r.agence||'',
-              r.type_operation||'', r.note_accueil||'', r.note_attente||'', r.note_conseiller||'',
-              r.note_traitement||'', r.note_applications||'', r.note_globale||'',
-              r.score_nps||'', '"'+(r.commentaire||'').replace(/"/g,'""')+'"'].join(',') + '\n';
-    });
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="BCEG_Satisfaction_'+new Date().toISOString().substring(0,10)+'.csv"');
-    res.send('\uFEFF' + csv);
+          WHERE c.id=?`, [req.params.clientId], (err, client) => {
+    if (!client) client = { id: req.params.clientId, nom: 'Client', prenom: 'Demo BCEG', operation_id: null, type_operation: 'Visite en agence', agence_nom: 'BCEG' };
+    const q = questionnaires[detecterType(client.type_operation)];
+    const questionsHTML = q.questions.map((quest, i) => `
+      <div class="question-card">
+        <div class="question-label"><span class="question-num">${i+1}</span>${quest.label}</div>
+        <div class="stars">
+          ${[{v:1,e:'😞',l:'Tres mal'},{v:2,e:'😕',l:'Mal'},{v:3,e:'😐',l:'Moyen'},{v:4,e:'🙂',l:'Bien'},{v:5,e:'😄',l:'Tres bien'}].map(o =>
+            `<button type="button" class="star-btn" data-key="${quest.id}_${i}" data-val="${o.v}" onclick="selectNote('${quest.id}_${i}','${quest.id}',${o.v})"><span class="emoji">${o.e}</span>${o.l}</button>`
+          ).join('')}
+        </div>
+        <input type="hidden" name="${quest.id}" id="hidden_${quest.id}">
+      </div>`).join('');
+    const numNPS = q.questions.length + 1;
+    const numCom = numNPS + 1;
+
+    res.send(`<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Enquete Satisfaction - BCEG</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;background:#f3f6f3;color:#2c2c2c;}
+header{background:#4d553d;color:white;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+header h1{font-size:22px;font-weight:bold;}header p{font-size:12px;color:#c8d4c8;margin-top:2px;}
+.badge-agence{background:rgba(255,255,255,0.15);border-radius:20px;padding:4px 12px;font-size:12px;color:#e8ede8;}
+.container{max-width:620px;margin:0 auto;padding:20px 16px 40px;}
+.intro-card{background:white;border-radius:10px;padding:20px;margin-bottom:20px;border-left:5px solid #4d553d;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+.intro-card h2{color:#4d553d;font-size:17px;margin-bottom:8px;}.intro-card p{color:#555;font-size:14px;line-height:1.5;}
+.badge-type{display:inline-block;background:#4d553d;color:white;border-radius:20px;padding:4px 14px;font-size:13px;margin-top:10px;}
+.question-card{background:white;border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.question-label{font-size:15px;font-weight:bold;color:#333;margin-bottom:14px;line-height:1.4;}
+.question-num{display:inline-block;background:#4d553d;color:white;border-radius:50%;width:26px;height:26px;text-align:center;line-height:26px;font-size:13px;margin-right:8px;}
+.stars{display:flex;gap:8px;flex-wrap:wrap;}
+.star-btn{flex:1;min-width:52px;padding:12px 6px;border:2px solid #ddd;border-radius:8px;background:white;cursor:pointer;text-align:center;font-size:12px;transition:all 0.2s;}
+.star-btn:hover{border-color:#4d553d;background:#f3f6f3;}.star-btn.selected{border-color:#4d553d;background:#4d553d;color:white;}
+.emoji{font-size:20px;display:block;margin-bottom:4px;}
+.nps-grid{display:flex;gap:6px;flex-wrap:wrap;}
+.nps-btn{width:44px;height:44px;border:2px solid #ddd;border-radius:8px;background:white;cursor:pointer;font-size:15px;font-weight:bold;transition:all 0.2s;}
+.nps-btn:hover{border-color:#4d553d;}.nps-btn.selected{background:#4d553d;border-color:#4d553d;color:white;}
+.nps-labels{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:#888;}
+textarea{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:14px;font-family:Arial,sans-serif;resize:vertical;min-height:90px;}
+textarea:focus{outline:none;border-color:#4d553d;}
+.btn-row{display:flex;gap:12px;margin-top:8px;}
+.submit-btn{flex:2;padding:16px;background:#4d553d;color:white;border:none;border-radius:10px;font-size:17px;font-weight:bold;cursor:pointer;}
+.submit-btn:hover{background:#3a4130;}
+.rec-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 10px;background:linear-gradient(135deg,#c0622a,#e07b39);color:white;border-radius:10px;text-decoration:none;font-size:13px;font-weight:bold;text-align:center;box-shadow:0 4px 12px rgba(192,98,42,0.4);animation:pulse 2s infinite;}
+@keyframes pulse{0%{box-shadow:0 4px 12px rgba(192,98,42,0.3);}50%{box-shadow:0 4px 20px rgba(192,98,42,0.7);}100%{box-shadow:0 4px 12px rgba(192,98,42,0.3);}}
+.note-small{font-size:12px;color:#999;text-align:center;margin-top:16px;}
+.success-screen{display:none;text-align:center;background:white;border-radius:10px;padding:40px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>BCEG</h1><p>Banque pour le Commerce et l'Entrepreneuriat du Gabon</p></div>
+  <div class="badge-agence">${client.agence_nom||'BCEG'}</div>
+</header>
+<div class="container">
+  <div class="intro-card">
+    <h2>Bonjour ${client.prenom} ${client.nom} !</h2>
+    <p>Votre avis compte beaucoup pour la BCEG. Cette enquete prend moins de <strong>2 minutes</strong>.</p>
+    <span class="badge-type">${q.icon} ${q.titre}</span>
+  </div>
+  <form id="enqueteForm">
+    <input type="hidden" name="enquete_id" value="${client.operation_id||0}">
+    ${questionsHTML}
+    <div class="question-card">
+      <div class="question-label"><span class="question-num">${numNPS}</span>Sur une echelle de 0 a 10, recommanderiez-vous la BCEG a un proche ?</div>
+      <div class="nps-grid" id="nps-grid">
+        ${[0,1,2,3,4,5,6,7,8,9,10].map(n=>`<button type="button" class="nps-btn" onclick="selectNPS(${n})">${n}</button>`).join('')}
+      </div>
+      <div class="nps-labels"><span>Pas du tout</span><span>Certainement</span></div>
+      <input type="hidden" name="score_nps" id="score_nps">
+    </div>
+    <div class="question-card">
+      <div class="question-label"><span class="question-num">${numCom}</span>Avez-vous un commentaire ou une suggestion ? (optionnel)</div>
+      <textarea name="commentaire" placeholder="Partagez votre experience, vos suggestions..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button type="submit" class="submit-btn">Envoyer mon avis</button>
+      <a href="/enquete/reclamation" class="rec-btn">
+        <span style="font-size:20px;margin-bottom:4px;">⚠️</span>Reclamation
+      </a>
+    </div>
+    <p class="note-small">Vos reponses sont confidentielles et utilisees uniquement pour ameliorer nos services.</p>
+  </form>
+  <div class="success-screen" id="successScreen">
+    <div style="font-size:60px;margin-bottom:16px;">✅</div>
+    <h2 style="color:#4d553d;font-size:22px;margin-bottom:12px;">Merci pour votre avis !</h2>
+    <p style="color:#555;font-size:15px;">Votre retour a bien ete enregistre.<br>La BCEG vous remercie de votre confiance.</p>
+    <br><p style="color:#4d553d;font-weight:bold;">Bonne journee !</p>
+  </div>
+</div>
+<script>
+function selectNote(key,fieldId,val){
+  document.getElementById('hidden_'+fieldId).value=val;
+  document.querySelectorAll('[data-key="'+key+'"]').forEach(function(btn,i){btn.classList.toggle('selected',i<val);});
+}
+function selectNPS(val){
+  document.getElementById('score_nps').value=val;
+  document.getElementById('nps-grid').querySelectorAll('.nps-btn').forEach(function(btn){btn.classList.toggle('selected',parseInt(btn.textContent)===val);});
+}
+document.getElementById('enqueteForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var form=e.target;
+  var data={
+    enquete_id:form.enquete_id.value,
+    note_accueil:form.note_accueil?(form.note_accueil.value||3):3,
+    note_attente:form.note_attente?(form.note_attente.value||3):3,
+    note_conseiller:form.note_conseiller?(form.note_conseiller.value||3):3,
+    note_traitement:form.note_traitement?(form.note_traitement.value||3):3,
+    note_applications:form.note_applications?(form.note_applications.value||3):3,
+    note_globale:form.note_globale?(form.note_globale.value||3):3,
+    score_nps:form.score_nps.value||7,
+    commentaire:form.commentaire.value
+  };
+  fetch('/enquete/repondre',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+  .then(function(){
+    form.style.display='none';
+    document.querySelector('.intro-card').style.display='none';
+    document.getElementById('successScreen').style.display='block';
+  }).catch(function(){
+    form.style.display='none';
+    document.querySelector('.intro-card').style.display='none';
+    document.getElementById('successScreen').style.display='block';
+  });
+});
+</script>
+</body></html>`);
   });
 });
 
-// EXPORT RECLAMATIONS CSV
-router.get('/export-reclamations', function(req, res) {
-  db.all("SELECT * FROM reclamations ORDER BY date_reception DESC", [], function(err, rows) {
-    rows = rows || [];
-    var csv = 'N° Suivi,Date,Client,Telephone,Email,Agence,Categorie,Description,Fichier,Statut\n';
-    rows.forEach(function(r) {
-      csv += [r.numero_suivi||'', (r.date_reception||'').toString().substring(0,10),
-              r.nom_client||'', r.telephone||'', r.email||'', r.agence||'',
-              r.categorie||'', '"'+(r.description||'').replace(/"/g,'""')+'"',
-              r.fichier_nom||'', r.statut||''].join(',') + '\n';
-    });
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="BCEG_Reclamations_'+new Date().toISOString().substring(0,10)+'.csv"');
-    res.send('\uFEFF' + csv);
-  });
+// ENREGISTREMENT REPONSE
+router.post('/repondre', (req, res) => {
+  const {enquete_id,note_accueil,note_attente,note_conseiller,note_traitement,note_applications,note_globale,score_nps,commentaire} = req.body;
+  db.run(`INSERT INTO reponses (enquete_id,note_accueil,note_attente,note_conseiller,note_traitement,note_applications,note_globale,score_nps,commentaire,date_reponse) VALUES (?,?,?,?,?,?,?,?,?,datetime('now'))`,
+    [enquete_id||0,note_accueil||3,note_attente||3,note_conseiller||3,note_traitement||3,note_applications||3,note_globale||3,score_nps||7,commentaire||''],
+    function(err){
+      if(err) return res.status(500).json({error:'Erreur'});
+      res.json({success:true,id:this.lastID});
+    }
+  );
 });
 
 module.exports = router;
