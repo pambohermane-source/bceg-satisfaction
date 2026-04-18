@@ -214,6 +214,283 @@ router.get('/fichier/:filename', (req, res) => {
   else res.status(404).send('Fichier non trouve');
 });
 
+
+// ROUTES DE DEMONSTRATION PAR TYPE D'OPERATION
+router.get('/demo/:type', (req, res) => {
+  const type = req.params.type;
+  const q = questionnaires[type] || questionnaires['default'];
+  const client = {
+    id: 'demo',
+    nom: 'Client',
+    prenom: 'Demo',
+    operation_id: null,
+    type_operation: type,
+    agence_nom: 'BCEG'
+  };
+
+  const totalQuestions = q.questions.length + 2;
+  const questionsHTML = q.questions.map((quest, i) => `
+    <div class="question-card" id="qcard-\${i}">
+      <div class="progress-bar"><div class="progress-fill" style="width:\${Math.round(((i+1)/totalQuestions)*100)}%"></div></div>
+      <div class="question-meta">Question \${i+1} sur \${totalQuestions}</div>
+      <div class="question-label"><span class="q-icon">\${quest.icon}</span>\${quest.label}</div>
+      <div class="stars" id="stars-\${i}">
+        \${[{v:1,e:'😞',l:'Tres mal'},{v:2,e:'😕',l:'Mal'},{v:3,e:'😐',l:'Moyen'},{v:4,e:'🙂',l:'Bien'},{v:5,e:'😄',l:'Tres bien'}].map(o =>
+          \`<button type="button" class="star-btn" data-key="\${quest.id}_\${i}" data-val="\${o.v}" onclick="selectNote('\${quest.id}_\${i}','\${quest.id}',\${o.v},\${i})">
+            <span class="emoji">\${o.e}</span><span class="btn-label">\${o.l}</span>
+          </button>\`
+        ).join('')}
+      </div>
+      <input type="hidden" name="\${quest.id}" id="hidden_\${quest.id}">
+    </div>`).join('');
+
+  const numNPS = q.questions.length + 1;
+  const numCom = numNPS + 1;
+
+  res.send(`<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Demo \${q.titre} - BCEG</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#f3f6f3 0%,#e8ede8 100%);min-height:100vh;color:#2c2c2c;}
+header{background:linear-gradient(135deg,\${q.color},\${q.color}cc);color:white;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
+header h1{font-size:22px;font-weight:800;}header p{font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;}
+.badge-demo{background:rgba(255,255,0,0.3);border:1px solid rgba(255,255,0,0.6);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:white;}
+.container{max-width:600px;margin:0 auto;padding:20px 16px 60px;}
+.intro-card{background:white;border-radius:20px;padding:24px;margin-bottom:20px;box-shadow:0 8px 32px rgba(0,0,0,0.1);position:relative;overflow:hidden;}
+.intro-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,\${q.color},\${q.color}88);}
+.intro-card h2{font-size:20px;font-weight:800;color:#2c2c2c;margin-bottom:6px;}
+.intro-card p{color:#666;font-size:14px;line-height:1.6;}
+.badge-type{display:inline-flex;align-items:center;gap:6px;background:\${q.color}15;color:\${q.color};border:1px solid \${q.color}30;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;margin-top:12px;}
+.global-progress{background:#e8ede8;border-radius:8px;height:6px;margin-top:16px;overflow:hidden;}
+.global-progress-fill{height:6px;background:linear-gradient(90deg,\${q.color},\${q.color}88);border-radius:8px;transition:width 0.4s ease;}
+.question-card{background:white;border-radius:20px;padding:24px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,0.06);transition:all 0.3s;position:relative;overflow:hidden;}
+.question-card.answered{border-left:4px solid #27ae60;}
+.progress-bar{height:3px;background:#f0f0f0;border-radius:3px;margin-bottom:16px;overflow:hidden;}
+.progress-fill{height:3px;background:linear-gradient(90deg,\${q.color},\${q.color}88);border-radius:3px;}
+.question-meta{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:600;}
+.question-label{font-size:16px;font-weight:700;color:#2c2c2c;margin-bottom:18px;line-height:1.4;display:flex;align-items:flex-start;gap:10px;}
+.q-icon{font-size:22px;flex-shrink:0;}
+.stars{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.star-btn{padding:12px 4px;border:2px solid #e8e8e8;border-radius:12px;background:white;cursor:pointer;text-align:center;font-size:11px;font-weight:600;color:#888;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.star-btn:hover{border-color:\${q.color};background:\${q.color}10;transform:translateY(-2px);}
+.star-btn.selected{border-color:\${q.color};background:\${q.color};color:white;transform:translateY(-2px);}
+.emoji{font-size:22px;}.btn-label{font-size:10px;}
+.nps-grid{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;}
+.nps-btn{padding:10px 0;border:2px solid #e8e8e8;border-radius:10px;background:white;cursor:pointer;font-size:14px;font-weight:700;transition:all 0.2s;color:#555;}
+.nps-btn:hover{border-color:\${q.color};}
+.nps-btn.selected{background:\${q.color};border-color:\${q.color};color:white;}
+.nps-labels{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:#aaa;font-weight:600;}
+textarea{width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:12px;font-size:14px;font-family:inherit;resize:vertical;min-height:100px;transition:all 0.2s;background:#fafafa;}
+textarea:focus{outline:none;border-color:\${q.color};}
+.btn-row{display:flex;gap:12px;margin-top:8px;}
+.submit-btn{flex:2;padding:18px;background:linear-gradient(135deg,\${q.color},\${q.color}cc);color:white;border:none;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;}
+.rec-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 10px;background:linear-gradient(135deg,#c0622a,#e07b39);color:white;border-radius:14px;text-decoration:none;font-size:12px;font-weight:800;text-align:center;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 8px 24px rgba(192,98,42,0.35);}50%{box-shadow:0 8px 32px rgba(192,98,42,0.6);}}
+.note-small{font-size:12px;color:#aaa;text-align:center;margin-top:14px;}
+.success-screen{display:none;text-align:center;background:white;border-radius:24px;padding:48px 24px;box-shadow:0 16px 64px rgba(0,0,0,0.12);}
+.banner-demo{background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:10px 16px;margin-bottom:16px;font-size:13px;color:#856404;text-align:center;}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>BCEG</h1><p>Banque pour le Commerce et l'Entrepreneuriat du Gabon</p></div>
+  <div class="badge-demo">MODE DEMO</div>
+</header>
+<div class="container">
+  <div class="banner-demo">⚠️ Ceci est une demonstration — Les reponses ne seront pas enregistrees</div>
+  <div class="intro-card">
+    <h2>Bonjour Client Demo ! 👋</h2>
+    <p>Votre avis compte beaucoup pour la BCEG. Cette enquete prend moins de <strong>2 minutes</strong>.</p>
+    <div class="badge-type">\${q.icon} \${q.titre}</div>
+    <div class="global-progress"><div class="global-progress-fill" id="globalProgress" style="width:0%"></div></div>
+  </div>
+  <form id="enqueteForm">
+    \${questionsHTML}
+    <div class="question-card" id="qcard-nps">
+      <div class="progress-bar"><div class="progress-fill" style="width:\${Math.round((numNPS/totalQuestions)*100)}%"></div></div>
+      <div class="question-meta">Question \${numNPS} sur \${totalQuestions}</div>
+      <div class="question-label"><span class="q-icon">🎯</span>Sur une echelle de 0 a 10, recommanderiez-vous la BCEG a un proche ?</div>
+      <div class="nps-grid" id="nps-grid">
+        \${[0,1,2,3,4,5,6,7,8,9,10].map(n=>\`<button type="button" class="nps-btn" onclick="selectNPS(\${n})">\${n}</button>\`).join('')}
+      </div>
+      <div class="nps-labels"><span>😞 Pas du tout</span><span>😄 Certainement</span></div>
+      <input type="hidden" name="score_nps" id="score_nps">
+    </div>
+    <div class="question-card">
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      <div class="question-meta">Question \${numCom} sur \${totalQuestions} — Optionnel</div>
+      <div class="question-label"><span class="q-icon">💬</span>Avez-vous un commentaire ou une suggestion ?</div>
+      <textarea placeholder="Partagez votre experience..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button type="submit" class="submit-btn">Envoyer mon avis ✓</button>
+      <a href="/enquete/reclamation" class="rec-btn"><span style="font-size:22px;">⚠️</span><span>Reclamation</span></a>
+    </div>
+    <p class="note-small">🔒 Mode demonstration — Aucune donnee enregistree</p>
+  </form>
+  <div class="success-screen" id="successScreen">
+    <div style="font-size:72px;margin-bottom:16px;">🎉</div>
+    <h2 style="font-size:26px;font-weight:800;color:#4d553d;margin-bottom:12px;">Merci pour votre avis !</h2>
+    <p style="color:#666;font-size:15px;">Votre retour a bien ete enregistre.<br>Bonne journee !</p>
+  </div>
+</div>
+<script>
+var answered={};
+var total=\${totalQuestions};
+function updateProgress(){var c=Object.keys(answered).length;document.getElementById('globalProgress').style.width=Math.round((c/total)*100)+'%';}
+function selectNote(key,fieldId,val,idx){
+  answered[fieldId]=val;
+  document.querySelectorAll('[data-key="'+key+'"]').forEach(function(btn,i){btn.classList.toggle('selected',i<val);});
+  var card=document.getElementById('qcard-'+idx);if(card)card.classList.add('answered');
+  updateProgress();
+}
+function selectNPS(val){
+  answered['nps']=val;
+  document.getElementById('nps-grid').querySelectorAll('.nps-btn').forEach(function(btn){btn.classList.toggle('selected',parseInt(btn.textContent)===val);});
+  document.getElementById('qcard-nps').classList.add('answered');updateProgress();
+}
+document.getElementById('enqueteForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  e.target.style.display='none';
+  document.querySelector('.intro-card').style.display='none';
+  document.querySelector('.banner-demo').style.display='none';
+  document.getElementById('successScreen').style.display='block';
+  window.scrollTo(0,0);
+});
+</script>
+</body></html>`);
+});
+
+
+// ROUTES DE DEMONSTRATION PAR TYPE D'OPERATION
+router.get('/demo/:type', (req, res) => {
+  const type = req.params.type;
+  const q = questionnaires[type] || questionnaires['default'];
+  const client = { id: 'demo', nom: 'Client Demo', prenom: 'BCEG', operation_id: null, type_operation: type, agence_nom: 'BCEG' };
+
+  const questionsHTML = q.questions.map((quest, i) => `
+    <div class="question-card" id="qcard-\${i}">
+      <div class="progress-bar"><div class="progress-fill" style="width:\${Math.round(((i+1)/(q.questions.length+2))*100)}%"></div></div>
+      <div class="question-meta">Question \${i+1} sur \${q.questions.length+2}</div>
+      <div class="question-label"><span class="q-icon">\${quest.icon}</span>\${quest.label}</div>
+      <div class="stars" id="stars-\${i}">
+        \${[{v:1,e:'😞',l:'Tres mal'},{v:2,e:'😕',l:'Mal'},{v:3,e:'😐',l:'Moyen'},{v:4,e:'🙂',l:'Bien'},{v:5,e:'😄',l:'Tres bien'}].map(o =>
+          `<button type="button" class="star-btn" data-key="\${quest.id}_\${i}" data-val="\${o.v}" onclick="selectNote('\${quest.id}_\${i}','\${quest.id}',\${o.v},\${i})">
+            <span class="emoji">\${o.e}</span><span class="btn-label">\${o.l}</span>
+          </button>`
+        ).join('')}
+      </div>
+      <input type="hidden" name="\${quest.id}" id="hidden_\${quest.id}">
+    </div>`).join('');
+
+  const numNPS = q.questions.length + 1;
+  const numCom = numNPS + 1;
+
+  res.send(`<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Demo \${q.titre} - BCEG</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#f3f6f3 0%,#e8ede8 100%);min-height:100vh;color:#2c2c2c;}
+header{background:linear-gradient(135deg,\${q.color},\${q.color}cc);color:white;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
+header h1{font-size:22px;font-weight:800;}header p{font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;}
+.badge-demo{background:rgba(255,255,255,0.25);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;}
+.container{max-width:600px;margin:0 auto;padding:20px 16px 60px;}
+.intro-card{background:white;border-radius:20px;padding:24px;margin-bottom:20px;box-shadow:0 8px 32px rgba(0,0,0,0.1);position:relative;overflow:hidden;}
+.intro-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,\${q.color},\${q.color}88);}
+.intro-card h2{font-size:20px;font-weight:800;color:#2c2c2c;margin-bottom:6px;}
+.intro-card p{color:#666;font-size:14px;line-height:1.6;}
+.badge-type{display:inline-flex;align-items:center;gap:6px;background:\${q.color}15;color:\${q.color};border:1px solid \${q.color}30;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;margin-top:12px;}
+.badge-demo-info{background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:10px 14px;margin-top:12px;font-size:12px;color:#856404;}
+.global-progress{background:#e8ede8;border-radius:8px;height:6px;margin-top:16px;overflow:hidden;}
+.global-progress-fill{height:6px;background:linear-gradient(90deg,\${q.color},\${q.color}88);border-radius:8px;transition:width 0.4s ease;}
+.question-card{background:white;border-radius:20px;padding:24px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,0.06);transition:all 0.3s;position:relative;overflow:hidden;}
+.question-card.answered{border-left:4px solid #27ae60;}
+.progress-bar{height:3px;background:#f0f0f0;border-radius:3px;margin-bottom:16px;}
+.progress-fill{height:3px;background:linear-gradient(90deg,\${q.color},\${q.color}88);border-radius:3px;}
+.question-meta{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:600;}
+.question-label{font-size:16px;font-weight:700;color:#2c2c2c;margin-bottom:18px;line-height:1.4;display:flex;align-items:flex-start;gap:10px;}
+.q-icon{font-size:22px;flex-shrink:0;}
+.stars{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.star-btn{padding:12px 4px;border:2px solid #e8e8e8;border-radius:12px;background:white;cursor:pointer;text-align:center;font-size:11px;font-weight:600;color:#888;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.star-btn:hover{border-color:\${q.color};background:\${q.color}10;transform:translateY(-2px);}
+.star-btn.selected{border-color:\${q.color};background:\${q.color};color:white;transform:translateY(-2px);}
+.emoji{font-size:22px;}.btn-label{font-size:10px;}
+.nps-grid{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;}
+.nps-btn{padding:10px 0;border:2px solid #e8e8e8;border-radius:10px;background:white;cursor:pointer;font-size:14px;font-weight:700;transition:all 0.2s;color:#555;}
+.nps-btn:hover{border-color:\${q.color};transform:translateY(-2px);}
+.nps-btn.selected{background:\${q.color};border-color:\${q.color};color:white;}
+.nps-labels{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:#aaa;font-weight:600;}
+textarea{width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:12px;font-size:14px;font-family:inherit;resize:vertical;min-height:100px;transition:all 0.2s;background:#fafafa;}
+textarea:focus{outline:none;border-color:\${q.color};background:white;}
+.btn-row{display:flex;gap:12px;margin-top:8px;}
+.submit-btn{flex:2;padding:18px;background:linear-gradient(135deg,\${q.color},\${q.color}cc);color:white;border:none;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;}
+.rec-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 10px;background:linear-gradient(135deg,#c0622a,#e07b39);color:white;border-radius:14px;text-decoration:none;font-size:12px;font-weight:800;text-align:center;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 8px 24px rgba(192,98,42,0.35);}50%{box-shadow:0 8px 32px rgba(192,98,42,0.6);}}
+.note-small{font-size:12px;color:#aaa;text-align:center;margin-top:14px;}
+.success-screen{display:none;text-align:center;background:white;border-radius:24px;padding:48px 24px;box-shadow:0 16px 64px rgba(0,0,0,0.12);}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>BCEG</h1><p>Banque pour le Commerce et l'Entrepreneuriat du Gabon</p></div>
+  <div class="badge-demo">Mode Demo</div>
+</header>
+<div class="container">
+  <div class="intro-card">
+    <h2>Bonjour Client Demo ! 👋</h2>
+    <p>Votre avis compte beaucoup pour la BCEG. Cette enquete prend moins de <strong>2 minutes</strong>.</p>
+    <div class="badge-type">\${q.icon} \${q.titre}</div>
+    <div class="badge-demo-info">⚠️ Mode demonstration — Ce questionnaire simule celui recu par un client apres : <b>\${q.titre}</b></div>
+    <div class="global-progress"><div class="global-progress-fill" id="globalProgress" style="width:0%"></div></div>
+  </div>
+  <form id="enqueteForm">
+    <input type="hidden" name="enquete_id" value="0">
+    \${questionsHTML}
+    <div class="question-card" id="qcard-nps">
+      <div class="progress-bar"><div class="progress-fill" style="width:\${Math.round((numNPS/(q.questions.length+2))*100)}%"></div></div>
+      <div class="question-meta">Question \${numNPS} sur \${q.questions.length+2}</div>
+      <div class="question-label"><span class="q-icon">🎯</span>Sur une echelle de 0 a 10, recommanderiez-vous la BCEG a un proche ?</div>
+      <div class="nps-grid" id="nps-grid">
+        \${[0,1,2,3,4,5,6,7,8,9,10].map(n=>`<button type="button" class="nps-btn" onclick="selectNPS(\${n})">\${n}</button>`).join('')}
+      </div>
+      <div class="nps-labels"><span>😞 Pas du tout</span><span>😄 Certainement</span></div>
+      <input type="hidden" name="score_nps" id="score_nps">
+    </div>
+    <div class="question-card">
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      <div class="question-meta">Question \${numCom} sur \${q.questions.length+2} — Optionnel</div>
+      <div class="question-label"><span class="q-icon">💬</span>Avez-vous un commentaire ou une suggestion ?</div>
+      <textarea name="commentaire" placeholder="Partagez votre experience..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button type="submit" class="submit-btn">Envoyer mon avis ✓</button>
+      <a href="/enquete/reclamation" class="rec-btn"><span style="font-size:22px;">⚠️</span><span>Reclamation</span></a>
+    </div>
+    <p class="note-small">🔒 Vos reponses sont confidentielles</p>
+  </form>
+  <div class="success-screen" id="successScreen">
+    <div style="font-size:72px;margin-bottom:16px;">🎉</div>
+    <h2 style="font-size:26px;font-weight:800;color:#4d553d;margin-bottom:12px;">Merci pour votre avis !</h2>
+    <p style="color:#666;font-size:15px;">Votre retour a bien ete enregistre.</p>
+    <br><p style="color:\${q.color};font-weight:800;font-size:18px;">Bonne journee ! 😊</p>
+  </div>
+</div>
+<script>
+var answered={};
+function updateProgress(){var c=Object.keys(answered).length;document.getElementById('globalProgress').style.width=Math.round(c/\${q.questions.length+2}*100)+'%';}
+function selectNote(key,fieldId,val,idx){answered[fieldId]=val;document.getElementById('hidden_'+fieldId).value=val;document.querySelectorAll('[data-key="'+key+'"]').forEach(function(btn,i){btn.classList.toggle('selected',i<val);});var card=document.getElementById('qcard-'+idx);if(card)card.classList.add('answered');updateProgress();}
+function selectNPS(val){answered['nps']=val;document.getElementById('score_nps').value=val;document.getElementById('nps-grid').querySelectorAll('.nps-btn').forEach(function(btn){btn.classList.toggle('selected',parseInt(btn.textContent)===val);});document.getElementById('qcard-nps').classList.add('answered');updateProgress();}
+document.getElementById('enqueteForm').addEventListener('submit',function(e){e.preventDefault();var btn=this.querySelector('.submit-btn');btn.textContent='Envoi...';btn.disabled=true;var form=e.target;var data={enquete_id:0,note_accueil:form.note_accueil?(form.note_accueil.value||3):3,note_attente:form.note_attente?(form.note_attente.value||3):3,note_conseiller:form.note_conseiller?(form.note_conseiller.value||3):3,note_traitement:form.note_traitement?(form.note_traitement.value||3):3,note_applications:form.note_applications?(form.note_applications.value||3):3,note_globale:form.note_globale?(form.note_globale.value||3):3,score_nps:form.score_nps.value||7,commentaire:form.commentaire.value};fetch('/enquete/repondre',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(function(){form.style.display='none';document.querySelector('.intro-card').style.display='none';document.getElementById('successScreen').style.display='block';window.scrollTo(0,0);}).catch(function(){form.style.display='none';document.querySelector('.intro-card').style.display='none';document.getElementById('successScreen').style.display='block';});});
+</script>
+</body></html>`);
+});
+
 // PAGE QUESTIONNAIRE
 router.get('/:clientId', (req, res) => {
   db.get(`SELECT c.*, o.id as operation_id, o.type_operation, a.nom as agence_nom
