@@ -5,14 +5,12 @@ const dbPath = path.join(__dirname, '..', 'bceg.db');
 const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
-  // Table agences
   db.run(`CREATE TABLE IF NOT EXISTS agences (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nom TEXT NOT NULL,
     localisation TEXT
   )`);
 
-  // Table clients
   db.run(`CREATE TABLE IF NOT EXISTS clients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nom TEXT NOT NULL,
@@ -25,18 +23,18 @@ db.serialize(() => {
     FOREIGN KEY (agence_id) REFERENCES agences(id)
   )`);
 
-  // Table operations
   db.run(`CREATE TABLE IF NOT EXISTS operations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     client_id INTEGER,
     type_operation TEXT,
     date_operation TEXT,
     agence_id INTEGER,
+    code_gestionnaire TEXT,
+    nom_gestionnaire TEXT,
     FOREIGN KEY (client_id) REFERENCES clients(id),
     FOREIGN KEY (agence_id) REFERENCES agences(id)
   )`);
 
-  // Table enquetes
   db.run(`CREATE TABLE IF NOT EXISTS enquetes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     operation_id INTEGER,
@@ -46,7 +44,6 @@ db.serialize(() => {
     FOREIGN KEY (operation_id) REFERENCES operations(id)
   )`);
 
-  // Table reponses
   db.run(`CREATE TABLE IF NOT EXISTS reponses (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     enquete_id INTEGER,
@@ -62,7 +59,6 @@ db.serialize(() => {
     FOREIGN KEY (enquete_id) REFERENCES enquetes(id)
   )`);
 
-  // Table reclamations
   db.run(`CREATE TABLE IF NOT EXISTS reclamations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     numero_suivi TEXT UNIQUE,
@@ -78,6 +74,10 @@ db.serialize(() => {
     date_reception DATETIME DEFAULT (datetime('now')),
     date_traitement DATETIME
   )`);
+
+  // Ajouter les colonnes gestionnaire si elles n'existent pas
+  db.run(`ALTER TABLE operations ADD COLUMN code_gestionnaire TEXT`, function() {});
+  db.run(`ALTER TABLE operations ADD COLUMN nom_gestionnaire TEXT`, function() {});
 
   console.log('Base de donnees initialisee avec succes');
 });
