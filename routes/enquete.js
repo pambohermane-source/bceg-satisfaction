@@ -18,40 +18,40 @@ const upload = multer({ storage, limits: { fileSize: 5*1024*1024 }, fileFilter: 
 }});
 
 const questionnaires = {
-  'credit': { titre: 'Votre demande de credit', icon: '💼', questions: [
-    { id: 'note_accueil', label: "Comment evaluez-vous l'accueil de votre conseiller ?" },
-    { id: 'note_attente', label: "Etes-vous satisfait(e) du delai de traitement de votre dossier ?" },
-    { id: 'note_conseiller', label: "La clarte des informations fournies etait-elle satisfaisante ?" },
-    { id: 'note_traitement', label: "Le resultat obtenu correspond-il a vos attentes ?" },
-    { id: 'note_globale', label: "Quelle note globale donnez-vous a cette experience ?" }
+  'credit': { titre: 'Demande de credit', icon: '💼', color: '#2d6a9f', questions: [
+    { id: 'note_accueil', label: "Comment evaluez-vous l'accueil de votre conseiller ?", icon: '🤝' },
+    { id: 'note_attente', label: "Etes-vous satisfait(e) du delai de traitement de votre dossier ?", icon: '⏱️' },
+    { id: 'note_conseiller', label: "La clarte des informations fournies etait-elle satisfaisante ?", icon: '💬' },
+    { id: 'note_traitement', label: "Le resultat obtenu correspond-il a vos attentes ?", icon: '✅' },
+    { id: 'note_globale', label: "Quelle note globale donnez-vous a cette experience ?", icon: '⭐' }
   ]},
-  'ouverture': { titre: 'Votre ouverture de compte', icon: '🏦', questions: [
-    { id: 'note_accueil', label: "Comment evaluez-vous la qualite de l'accueil ?" },
-    { id: 'note_attente', label: "Le delai de traitement de votre dossier etait-il satisfaisant ?" },
-    { id: 'note_conseiller', label: "Les explications sur les produits etaient-elles claires ?" },
-    { id: 'note_traitement', label: "La procedure d'ouverture etait-elle simple et rapide ?" },
-    { id: 'note_globale', label: "Quelle note globale donnez-vous a cette experience ?" }
+  'ouverture': { titre: 'Ouverture de compte', icon: '🏦', color: '#1a7a4a', questions: [
+    { id: 'note_accueil', label: "Comment evaluez-vous la qualite de l'accueil ?", icon: '😊' },
+    { id: 'note_attente', label: "Le delai de traitement de votre dossier etait-il satisfaisant ?", icon: '⏱️' },
+    { id: 'note_conseiller', label: "Les explications sur les produits etaient-elles claires ?", icon: '💬' },
+    { id: 'note_traitement', label: "La procedure d'ouverture etait-elle simple et rapide ?", icon: '⚡' },
+    { id: 'note_globale', label: "Quelle note globale donnez-vous a cette experience ?", icon: '⭐' }
   ]},
-  'gestionnaire': { titre: 'Votre echange avec votre gestionnaire', icon: '🤝', questions: [
-    { id: 'note_accueil', label: "Votre gestionnaire etait-il disponible et a l'ecoute ?" },
-    { id: 'note_conseiller', label: "Les conseils prodigues etaient-ils pertinents ?" },
-    { id: 'note_traitement', label: "Votre demande a-t-elle ete traitee de maniere satisfaisante ?" },
-    { id: 'note_globale', label: "Quelle note globale donnez-vous a cet echange ?" }
+  'gestionnaire': { titre: 'Echange avec votre gestionnaire', icon: '🤝', color: '#7b3fa0', questions: [
+    { id: 'note_accueil', label: "Votre gestionnaire etait-il disponible et a l'ecoute ?", icon: '👂' },
+    { id: 'note_conseiller', label: "Les conseils prodigues etaient-ils pertinents et adaptes ?", icon: '💡' },
+    { id: 'note_traitement', label: "Votre demande a-t-elle ete traitee de maniere satisfaisante ?", icon: '✅' },
+    { id: 'note_globale', label: "Quelle note globale donnez-vous a cet echange ?", icon: '⭐' }
   ]},
-  'digital': { titre: 'Vos services digitaux BCEG', icon: '📱', questions: [
-    { id: 'note_accueil', label: "La plateforme est-elle facile a utiliser ?" },
-    { id: 'note_attente', label: "La plateforme est-elle disponible et rapide ?" },
-    { id: 'note_conseiller', label: "En cas de probleme, le support etait-il efficace ?" },
-    { id: 'note_applications', label: "Les fonctionnalites repondent-elles a vos besoins ?" },
-    { id: 'note_globale', label: "Quelle note globale donnez-vous aux services digitaux BCEG ?" }
+  'digital': { titre: 'Services digitaux BCEG', icon: '📱', color: '#c0622a', questions: [
+    { id: 'note_accueil', label: "La plateforme B-Online est-elle facile a utiliser ?", icon: '🖥️' },
+    { id: 'note_attente', label: "La plateforme est-elle disponible et rapide ?", icon: '⚡' },
+    { id: 'note_conseiller', label: "En cas de probleme, le support etait-il efficace ?", icon: '🛠️' },
+    { id: 'note_applications', label: "Les fonctionnalites repondent-elles a vos besoins ?", icon: '🎯' },
+    { id: 'note_globale', label: "Quelle note globale donnez-vous aux services digitaux BCEG ?", icon: '⭐' }
   ]},
-  'default': { titre: 'Votre visite en agence', icon: '⭐', questions: [
-    { id: 'note_accueil', label: "Comment evaluez-vous l'accueil a votre arrivee en agence ?" },
-    { id: 'note_attente', label: "Etes-vous satisfait(e) du temps d'attente ?" },
-    { id: 'note_conseiller', label: "Comment evaluez-vous la qualite de votre conseiller ?" },
-    { id: 'note_traitement', label: "Votre operation a-t-elle ete traitee rapidement et correctement ?" },
-    { id: 'note_applications', label: "Etes-vous satisfait(e) des services numeriques de la BCEG ?" },
-    { id: 'note_globale', label: "Quelle note globale donnez-vous a votre experience aujourd'hui ?" }
+  'default': { titre: 'Votre visite en agence', icon: '⭐', color: '#4d553d', questions: [
+    { id: 'note_accueil', label: "Comment evaluez-vous l'accueil a votre arrivee en agence ?", icon: '😊' },
+    { id: 'note_attente', label: "Etes-vous satisfait(e) du temps d'attente ?", icon: '⏱️' },
+    { id: 'note_conseiller', label: "Comment evaluez-vous la qualite de votre conseiller ?", icon: '🤝' },
+    { id: 'note_traitement', label: "Votre operation a-t-elle ete traitee rapidement et correctement ?", icon: '⚡' },
+    { id: 'note_applications', label: "Etes-vous satisfait(e) des services numeriques de la BCEG ?", icon: '📱' },
+    { id: 'note_globale', label: "Quelle note globale donnez-vous a votre experience aujourd'hui ?", icon: '⭐' }
   ]}
 };
 
@@ -65,9 +65,7 @@ function detecterType(t) {
   return 'default';
 }
 
-// =====================
 // PAGE RECLAMATION
-// =====================
 router.get('/reclamation', (req, res) => {
   res.send(`<!DOCTYPE html>
 <html lang="fr">
@@ -75,34 +73,48 @@ router.get('/reclamation', (req, res) => {
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Reclamation - BCEG</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;background:#f3f6f3;color:#2c2c2c;}
-header{background:#4d553d;color:white;padding:16px 20px;}header h1{font-size:22px;font-weight:bold;}header p{font-size:12px;color:#c8d4c8;margin-top:2px;}
-.container{max-width:620px;margin:0 auto;padding:20px 16px 40px;}
-.intro-card{background:white;border-radius:10px;padding:20px;margin-bottom:20px;border-left:5px solid #c0622a;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
-.intro-card h2{color:#c0622a;font-size:17px;margin-bottom:8px;}.intro-card p{color:#555;font-size:14px;line-height:1.5;}
-.card{background:white;border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
-label{display:block;font-weight:bold;font-size:14px;color:#333;margin-bottom:8px;}
-input[type="text"],input[type="email"],input[type="tel"],select,textarea{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:14px;font-family:Arial,sans-serif;transition:border 0.2s;}
-input:focus,select:focus,textarea:focus{outline:none;border-color:#4d553d;}textarea{resize:vertical;min-height:100px;}
-.upload-zone{border:2px dashed #a6aa9e;border-radius:8px;padding:30px;text-align:center;cursor:pointer;background:#f9f9f7;}
-.upload-zone:hover{border-color:#4d553d;background:#f3f6f3;}.upload-zone .icon{font-size:36px;}.upload-zone p{color:#666;font-size:14px;margin-top:8px;}
-input[type="file"]{display:none;}.file-preview{margin-top:10px;font-size:13px;color:#4d553d;font-weight:bold;}
-.submit-btn{width:100%;padding:16px;background:#c0622a;color:white;border:none;border-radius:10px;font-size:17px;font-weight:bold;cursor:pointer;margin-top:8px;}
-.submit-btn:hover{background:#a0511f;}
-.retour-link{display:block;text-align:center;margin-top:16px;color:#a6aa9e;font-size:13px;text-decoration:none;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#f3f6f3 0%,#e8ede8 100%);min-height:100vh;color:#2c2c2c;}
+header{background:linear-gradient(135deg,#4d553d,#3a4130);color:white;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
+header h1{font-size:24px;font-weight:800;letter-spacing:-0.5px;}
+header p{font-size:12px;color:#c8d4c8;margin-top:2px;}
+.logo-circle{width:44px;height:44px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.container{max-width:600px;margin:0 auto;padding:24px 16px 60px;}
+.intro-card{background:white;border-radius:16px;padding:24px;margin-bottom:20px;border-left:6px solid #c0622a;box-shadow:0 8px 32px rgba(0,0,0,0.1);}
+.intro-card h2{color:#c0622a;font-size:20px;margin-bottom:8px;font-weight:800;}
+.intro-card p{color:#666;font-size:14px;line-height:1.6;}
+.card{background:white;border-radius:16px;padding:22px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,0.06);transition:box-shadow 0.2s;}
+.card:focus-within{box-shadow:0 8px 32px rgba(192,98,42,0.15);}
+label{display:block;font-weight:700;font-size:13px;color:#444;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
+input[type="text"],input[type="email"],input[type="tel"],select,textarea{width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:10px;font-size:15px;font-family:inherit;transition:all 0.2s;background:#fafafa;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#c0622a;background:white;box-shadow:0 0 0 4px rgba(192,98,42,0.1);}
+textarea{resize:vertical;min-height:120px;}
+.upload-zone{border:2px dashed #c8d4c8;border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:all 0.2s;background:#fafafa;}
+.upload-zone:hover{border-color:#c0622a;background:#fdf5f2;}
+.upload-zone .icon{font-size:40px;margin-bottom:8px;}
+.upload-zone p{color:#888;font-size:14px;}.upload-zone .hint{font-size:12px;color:#aaa;margin-top:4px;}
+input[type="file"]{display:none;}
+.file-preview{margin-top:12px;font-size:13px;color:#4d553d;font-weight:600;background:#e8ede8;padding:8px 12px;border-radius:8px;}
+.submit-btn{width:100%;padding:18px;background:linear-gradient(135deg,#c0622a,#e07b39);color:white;border:none;border-radius:12px;font-size:18px;font-weight:800;cursor:pointer;margin-top:8px;box-shadow:0 8px 24px rgba(192,98,42,0.4);transition:all 0.2s;letter-spacing:0.3px;}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(192,98,42,0.5);}
+.submit-btn:active{transform:translateY(0);}
+.retour-link{display:block;text-align:center;margin-top:20px;color:#a6aa9e;font-size:13px;text-decoration:none;transition:color 0.2s;}
 .retour-link:hover{color:#4d553d;}
-.success-screen{display:none;text-align:center;background:white;border-radius:10px;padding:40px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
-.numero{font-size:26px;font-weight:bold;color:#4d553d;background:#e8ede8;padding:12px 24px;border-radius:10px;display:inline-block;margin:16px 0;letter-spacing:2px;}
+.success-screen{display:none;text-align:center;background:white;border-radius:20px;padding:48px 24px;box-shadow:0 16px 64px rgba(0,0,0,0.12);}
+.numero{font-size:28px;font-weight:800;color:#4d553d;background:linear-gradient(135deg,#e8ede8,#d5e8d5);padding:16px 28px;border-radius:12px;display:inline-block;margin:20px 0;letter-spacing:3px;}
 </style>
 </head>
 <body>
-<header><h1>BCEG</h1><p>Banque pour le Commerce et l'Entrepreneuriat du Gabon</p></header>
+<header>
+  <div><h1>BCEG</h1><p>Banque pour le Commerce et l'Entrepreneuriat du Gabon</p></div>
+  <div class="logo-circle">📋</div>
+</header>
 <div class="container">
   <div class="intro-card">
-    <h2>Deposer une reclamation</h2>
-    <p>Vous avez rencontre un probleme ? Decrivez-le ci-dessous. Notre equipe vous repondra dans les plus brefs delais.</p>
+    <h2>⚠️ Deposer une reclamation</h2>
+    <p>Vous avez rencontre un probleme ? Decrivez-le ci-dessous. Notre equipe vous repondra dans les <strong>48 heures ouvrables</strong>. Vous pouvez egalement joindre un document justificatif.</p>
   </div>
-  <form id="reclamationForm" enctype="multipart/form-data">
+  <form id="reclamationForm">
     <div class="card"><label>Votre nom complet *</label><input type="text" name="nom" placeholder="Ex : ONDO Jean-Baptiste" required></div>
     <div class="card"><label>Votre numero de telephone *</label><input type="tel" name="telephone" placeholder="Ex : 06 12 34 56" required></div>
     <div class="card"><label>Votre adresse email (optionnel)</label><input type="email" name="email" placeholder="Ex : votre@email.com"></div>
@@ -124,34 +136,42 @@ input[type="file"]{display:none;}.file-preview{margin-top:10px;font-size:13px;co
       </select>
     </div>
     <div class="card"><label>Description detaillee *</label>
-      <textarea name="description" placeholder="Decrivez votre probleme avec le maximum de details..." required></textarea>
+      <textarea name="description" placeholder="Decrivez votre probleme avec le maximum de details : date, agence, type d'operation, ce qui s'est passe..." required></textarea>
     </div>
     <div class="card"><label>Joindre un document (optionnel)</label>
       <div class="upload-zone" onclick="document.getElementById('fichier').click()">
-        <div class="icon">📎</div><p>Cliquez pour ajouter un document</p>
-        <p style="font-size:12px;color:#aaa;margin-top:4px;">PDF, JPG, PNG - max 5 Mo</p>
+        <div class="icon">📎</div>
+        <p>Cliquez pour ajouter un document</p>
+        <p class="hint">PDF, JPG, PNG — maximum 5 Mo</p>
       </div>
       <input type="file" id="fichier" name="fichier" accept=".pdf,.jpg,.jpeg,.png" onchange="afficherFichier(this)">
-      <div class="file-preview" id="filePreview"></div>
+      <div class="file-preview" id="filePreview" style="display:none;"></div>
     </div>
     <button type="submit" class="submit-btn">Envoyer ma reclamation</button>
     <a href="javascript:history.back()" class="retour-link">← Retour au questionnaire</a>
   </form>
   <div class="success-screen" id="successScreen">
-    <div style="font-size:60px;margin-bottom:16px;">✅</div>
-    <h2 style="color:#4d553d;font-size:22px;margin-bottom:12px;">Reclamation enregistree !</h2>
-    <p style="color:#555;font-size:15px;">Votre reclamation a bien ete recue. Voici votre numero de suivi :</p>
+    <div style="font-size:72px;margin-bottom:16px;">✅</div>
+    <h2 style="color:#4d553d;font-size:26px;margin-bottom:12px;font-weight:800;">Reclamation enregistree !</h2>
+    <p style="color:#666;font-size:15px;line-height:1.6;">Votre reclamation a bien ete recue.<br>Voici votre numero de suivi :</p>
     <div class="numero" id="numeroSuivi"></div>
-    <p style="color:#555;font-size:15px;">Notre equipe vous contactera dans les <strong>48 heures</strong> ouvrables.</p>
-    <br><p style="color:#4d553d;font-weight:bold;">Merci de votre confiance.</p>
+    <p style="color:#666;font-size:14px;">Conservez ce numero. Notre equipe vous contactera<br>dans les <strong>48 heures</strong> ouvrables.</p>
+    <br><p style="color:#4d553d;font-weight:800;font-size:16px;">Merci de votre confiance.</p>
   </div>
 </div>
 <script>
 function afficherFichier(input) {
-  if (input.files && input.files[0]) document.getElementById('filePreview').textContent = 'Fichier selectionne : ' + input.files[0].name;
+  var preview = document.getElementById('filePreview');
+  if (input.files && input.files[0]) {
+    preview.textContent = '✓ ' + input.files[0].name;
+    preview.style.display = 'block';
+  }
 }
 document.getElementById('reclamationForm').addEventListener('submit', function(e) {
   e.preventDefault();
+  var btn = this.querySelector('.submit-btn');
+  btn.textContent = 'Envoi en cours...';
+  btn.disabled = true;
   var formData = new FormData(e.target);
   fetch('/enquete/reclamation/soumettre', { method: 'POST', body: formData })
   .then(function(r) { return r.json(); })
@@ -194,9 +214,7 @@ router.get('/fichier/:filename', (req, res) => {
   else res.status(404).send('Fichier non trouve');
 });
 
-// =====================
 // PAGE QUESTIONNAIRE
-// =====================
 router.get('/:clientId', (req, res) => {
   db.get(`SELECT c.*, o.id as operation_id, o.type_operation, a.nom as agence_nom
           FROM clients c
@@ -204,17 +222,25 @@ router.get('/:clientId', (req, res) => {
           LEFT JOIN agences a ON a.id=c.agence_id
           WHERE c.id=?`, [req.params.clientId], (err, client) => {
     if (!client) client = { id: req.params.clientId, nom: 'Client', prenom: 'Demo BCEG', operation_id: null, type_operation: 'Visite en agence', agence_nom: 'BCEG' };
+    
     const q = questionnaires[detecterType(client.type_operation)];
+    const totalQuestions = q.questions.length + 2;
+
     const questionsHTML = q.questions.map((quest, i) => `
-      <div class="question-card">
-        <div class="question-label"><span class="question-num">${i+1}</span>${quest.label}</div>
-        <div class="stars">
+      <div class="question-card" id="qcard-${i}">
+        <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(((i+1)/totalQuestions)*100)}%"></div></div>
+        <div class="question-meta">Question ${i+1} sur ${totalQuestions}</div>
+        <div class="question-label"><span class="q-icon">${quest.icon}</span>${quest.label}</div>
+        <div class="stars" id="stars-${i}">
           ${[{v:1,e:'😞',l:'Tres mal'},{v:2,e:'😕',l:'Mal'},{v:3,e:'😐',l:'Moyen'},{v:4,e:'🙂',l:'Bien'},{v:5,e:'😄',l:'Tres bien'}].map(o =>
-            `<button type="button" class="star-btn" data-key="${quest.id}_${i}" data-val="${o.v}" onclick="selectNote('${quest.id}_${i}','${quest.id}',${o.v})"><span class="emoji">${o.e}</span>${o.l}</button>`
+            `<button type="button" class="star-btn" data-key="${quest.id}_${i}" data-val="${o.v}" onclick="selectNote('${quest.id}_${i}','${quest.id}',${o.v},${i})">
+              <span class="emoji">${o.e}</span><span class="btn-label">${o.l}</span>
+            </button>`
           ).join('')}
         </div>
         <input type="hidden" name="${quest.id}" id="hidden_${quest.id}">
       </div>`).join('');
+
     const numNPS = q.questions.length + 1;
     const numCom = numNPS + 1;
 
@@ -224,34 +250,62 @@ router.get('/:clientId', (req, res) => {
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Enquete Satisfaction - BCEG</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;background:#f3f6f3;color:#2c2c2c;}
-header{background:#4d553d;color:white;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
-header h1{font-size:22px;font-weight:bold;}header p{font-size:12px;color:#c8d4c8;margin-top:2px;}
-.badge-agence{background:rgba(255,255,255,0.15);border-radius:20px;padding:4px 12px;font-size:12px;color:#e8ede8;}
-.container{max-width:620px;margin:0 auto;padding:20px 16px 40px;}
-.intro-card{background:white;border-radius:10px;padding:20px;margin-bottom:20px;border-left:5px solid #4d553d;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
-.intro-card h2{color:#4d553d;font-size:17px;margin-bottom:8px;}.intro-card p{color:#555;font-size:14px;line-height:1.5;}
-.badge-type{display:inline-block;background:#4d553d;color:white;border-radius:20px;padding:4px 14px;font-size:13px;margin-top:10px;}
-.question-card{background:white;border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
-.question-label{font-size:15px;font-weight:bold;color:#333;margin-bottom:14px;line-height:1.4;}
-.question-num{display:inline-block;background:#4d553d;color:white;border-radius:50%;width:26px;height:26px;text-align:center;line-height:26px;font-size:13px;margin-right:8px;}
-.stars{display:flex;gap:8px;flex-wrap:wrap;}
-.star-btn{flex:1;min-width:52px;padding:12px 6px;border:2px solid #ddd;border-radius:8px;background:white;cursor:pointer;text-align:center;font-size:12px;transition:all 0.2s;}
-.star-btn:hover{border-color:#4d553d;background:#f3f6f3;}.star-btn.selected{border-color:#4d553d;background:#4d553d;color:white;}
-.emoji{font-size:20px;display:block;margin-bottom:4px;}
-.nps-grid{display:flex;gap:6px;flex-wrap:wrap;}
-.nps-btn{width:44px;height:44px;border:2px solid #ddd;border-radius:8px;background:white;cursor:pointer;font-size:15px;font-weight:bold;transition:all 0.2s;}
-.nps-btn:hover{border-color:#4d553d;}.nps-btn.selected{background:#4d553d;border-color:#4d553d;color:white;}
-.nps-labels{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:#888;}
-textarea{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:14px;font-family:Arial,sans-serif;resize:vertical;min-height:90px;}
-textarea:focus{outline:none;border-color:#4d553d;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#f3f6f3 0%,#e8ede8 100%);min-height:100vh;color:#2c2c2c;}
+header{background:linear-gradient(135deg,${q.color},${q.color}cc);color:white;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
+header h1{font-size:22px;font-weight:800;}
+header p{font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;}
+.badge-agence{background:rgba(255,255,255,0.2);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;backdrop-filter:blur(10px);}
+.container{max-width:600px;margin:0 auto;padding:20px 16px 60px;}
+
+/* INTRO CARD */
+.intro-card{background:white;border-radius:20px;padding:24px;margin-bottom:20px;box-shadow:0 8px 32px rgba(0,0,0,0.1);position:relative;overflow:hidden;}
+.intro-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,${q.color},${q.color}88);}
+.intro-card h2{font-size:20px;font-weight:800;color:#2c2c2c;margin-bottom:6px;}
+.intro-card p{color:#666;font-size:14px;line-height:1.6;}
+.badge-type{display:inline-flex;align-items:center;gap:6px;background:${q.color}15;color:${q.color};border:1px solid ${q.color}30;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;margin-top:12px;}
+.global-progress{background:#e8ede8;border-radius:8px;height:6px;margin-top:16px;overflow:hidden;}
+.global-progress-fill{height:6px;background:linear-gradient(90deg,${q.color},${q.color}88);border-radius:8px;transition:width 0.4s ease;}
+
+/* QUESTION CARDS */
+.question-card{background:white;border-radius:20px;padding:24px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,0.06);transition:all 0.3s;position:relative;overflow:hidden;}
+.question-card.answered{border-left:4px solid #27ae60;box-shadow:0 4px 16px rgba(39,174,96,0.1);}
+.progress-bar{height:3px;background:#f0f0f0;border-radius:3px;margin-bottom:16px;overflow:hidden;}
+.progress-fill{height:3px;background:linear-gradient(90deg,${q.color},${q.color}88);border-radius:3px;transition:width 0.4s;}
+.question-meta{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:600;}
+.question-label{font-size:16px;font-weight:700;color:#2c2c2c;margin-bottom:18px;line-height:1.4;display:flex;align-items:flex-start;gap:10px;}
+.q-icon{font-size:22px;flex-shrink:0;margin-top:-2px;}
+.stars{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.star-btn{padding:12px 4px;border:2px solid #e8e8e8;border-radius:12px;background:white;cursor:pointer;text-align:center;font-size:11px;font-weight:600;color:#888;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.star-btn:hover{border-color:${q.color};background:${q.color}10;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+.star-btn.selected{border-color:${q.color};background:${q.color};color:white;transform:translateY(-2px);box-shadow:0 4px 16px ${q.color}50;}
+.emoji{font-size:22px;}
+.btn-label{font-size:10px;}
+
+/* NPS */
+.nps-grid{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;}
+.nps-btn{padding:10px 0;border:2px solid #e8e8e8;border-radius:10px;background:white;cursor:pointer;font-size:14px;font-weight:700;transition:all 0.2s;color:#555;}
+.nps-btn:hover{border-color:${q.color};transform:translateY(-2px);}
+.nps-btn.selected{background:${q.color};border-color:${q.color};color:white;transform:translateY(-2px);box-shadow:0 4px 12px ${q.color}50;}
+.nps-labels{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:#aaa;font-weight:600;}
+
+/* TEXTAREA */
+textarea{width:100%;padding:14px 16px;border:2px solid #e8e8e8;border-radius:12px;font-size:14px;font-family:inherit;resize:vertical;min-height:100px;transition:all 0.2s;background:#fafafa;}
+textarea:focus{outline:none;border-color:${q.color};background:white;box-shadow:0 0 0 4px ${q.color}15;}
+
+/* BUTTONS */
 .btn-row{display:flex;gap:12px;margin-top:8px;}
-.submit-btn{flex:2;padding:16px;background:#4d553d;color:white;border:none;border-radius:10px;font-size:17px;font-weight:bold;cursor:pointer;}
-.submit-btn:hover{background:#3a4130;}
-.rec-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 10px;background:linear-gradient(135deg,#c0622a,#e07b39);color:white;border-radius:10px;text-decoration:none;font-size:13px;font-weight:bold;text-align:center;box-shadow:0 4px 12px rgba(192,98,42,0.4);animation:pulse 2s infinite;}
-@keyframes pulse{0%{box-shadow:0 4px 12px rgba(192,98,42,0.3);}50%{box-shadow:0 4px 20px rgba(192,98,42,0.7);}100%{box-shadow:0 4px 12px rgba(192,98,42,0.3);}}
-.note-small{font-size:12px;color:#999;text-align:center;margin-top:16px;}
-.success-screen{display:none;text-align:center;background:white;border-radius:10px;padding:40px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+.submit-btn{flex:2;padding:18px;background:linear-gradient(135deg,${q.color},${q.color}cc);color:white;border:none;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 8px 24px ${q.color}40;transition:all 0.2s;letter-spacing:0.3px;}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px ${q.color}50;}
+.rec-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 10px;background:linear-gradient(135deg,#c0622a,#e07b39);color:white;border-radius:14px;text-decoration:none;font-size:12px;font-weight:800;text-align:center;box-shadow:0 8px 24px rgba(192,98,42,0.35);animation:pulse 2s infinite;transition:all 0.2s;}
+.rec-btn:hover{transform:translateY(-2px);}
+@keyframes pulse{0%,100%{box-shadow:0 8px 24px rgba(192,98,42,0.35);}50%{box-shadow:0 8px 32px rgba(192,98,42,0.6);}}
+.note-small{font-size:12px;color:#aaa;text-align:center;margin-top:14px;line-height:1.5;}
+
+/* SUCCESS */
+.success-screen{display:none;text-align:center;background:white;border-radius:24px;padding:48px 24px;box-shadow:0 16px 64px rgba(0,0,0,0.12);}
+.success-icon{font-size:80px;margin-bottom:20px;animation:bounce 0.6s ease;}
+@keyframes bounce{0%{transform:scale(0);}60%{transform:scale(1.2);}100%{transform:scale(1);}}
 </style>
 </head>
 <body>
@@ -259,74 +313,114 @@ textarea:focus{outline:none;border-color:#4d553d;}
   <div><h1>BCEG</h1><p>Banque pour le Commerce et l'Entrepreneuriat du Gabon</p></div>
   <div class="badge-agence">${client.agence_nom||'BCEG'}</div>
 </header>
+
 <div class="container">
   <div class="intro-card">
-    <h2>Bonjour ${client.prenom} ${client.nom} !</h2>
-    <p>Votre avis compte beaucoup pour la BCEG. Cette enquete prend moins de <strong>2 minutes</strong>.</p>
-    <span class="badge-type">${q.icon} ${q.titre}</span>
+    <h2>Bonjour ${client.prenom} ${client.nom} ! 👋</h2>
+    <p>Votre avis compte beaucoup pour la BCEG. Cette enquete prend moins de <strong>2 minutes</strong> et nous aide a vous servir mieux.</p>
+    <div class="badge-type">${q.icon} ${q.titre}</div>
+    <div class="global-progress"><div class="global-progress-fill" id="globalProgress" style="width:0%"></div></div>
   </div>
+
   <form id="enqueteForm">
     <input type="hidden" name="enquete_id" value="${client.operation_id||0}">
     ${questionsHTML}
-    <div class="question-card">
-      <div class="question-label"><span class="question-num">${numNPS}</span>Sur une echelle de 0 a 10, recommanderiez-vous la BCEG a un proche ?</div>
+
+    <div class="question-card" id="qcard-nps">
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.round((numNPS/totalQuestions)*100)}%"></div></div>
+      <div class="question-meta">Question ${numNPS} sur ${totalQuestions}</div>
+      <div class="question-label"><span class="q-icon">🎯</span>Sur une echelle de 0 a 10, recommanderiez-vous la BCEG a un proche ?</div>
       <div class="nps-grid" id="nps-grid">
         ${[0,1,2,3,4,5,6,7,8,9,10].map(n=>`<button type="button" class="nps-btn" onclick="selectNPS(${n})">${n}</button>`).join('')}
       </div>
-      <div class="nps-labels"><span>Pas du tout</span><span>Certainement</span></div>
+      <div class="nps-labels"><span>😞 Pas du tout</span><span>😄 Certainement</span></div>
       <input type="hidden" name="score_nps" id="score_nps">
     </div>
-    <div class="question-card">
-      <div class="question-label"><span class="question-num">${numCom}</span>Avez-vous un commentaire ou une suggestion ? (optionnel)</div>
-      <textarea name="commentaire" placeholder="Partagez votre experience, vos suggestions..."></textarea>
+
+    <div class="question-card" id="qcard-com">
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      <div class="question-meta">Question ${numCom} sur ${totalQuestions} — Optionnel</div>
+      <div class="question-label"><span class="q-icon">💬</span>Avez-vous un commentaire ou une suggestion ?</div>
+      <textarea name="commentaire" placeholder="Partagez votre experience, vos suggestions d'amelioration..." oninput="updateProgress()"></textarea>
     </div>
+
     <div class="btn-row">
-      <button type="submit" class="submit-btn">Envoyer mon avis</button>
+      <button type="submit" class="submit-btn">Envoyer mon avis ✓</button>
       <a href="/enquete/reclamation" class="rec-btn">
-        <span style="font-size:20px;margin-bottom:4px;">⚠️</span>Reclamation
+        <span style="font-size:22px;">⚠️</span>
+        <span>Reclamation</span>
       </a>
     </div>
-    <p class="note-small">Vos reponses sont confidentielles et utilisees uniquement pour ameliorer nos services.</p>
+    <p class="note-small">🔒 Vos reponses sont confidentielles et utilisees uniquement<br>pour ameliorer la qualite de nos services.</p>
   </form>
+
   <div class="success-screen" id="successScreen">
-    <div style="font-size:60px;margin-bottom:16px;">✅</div>
-    <h2 style="color:#4d553d;font-size:22px;margin-bottom:12px;">Merci pour votre avis !</h2>
-    <p style="color:#555;font-size:15px;">Votre retour a bien ete enregistre.<br>La BCEG vous remercie de votre confiance.</p>
-    <br><p style="color:#4d553d;font-weight:bold;">Bonne journee !</p>
+    <div class="success-icon">🎉</div>
+    <h2 style="font-size:28px;font-weight:800;color:#4d553d;margin-bottom:12px;">Merci pour votre avis !</h2>
+    <p style="color:#666;font-size:16px;line-height:1.6;">Votre retour a bien ete enregistre.<br>La BCEG s'engage a ameliorer continuellement<br>la qualite de ses services pour vous.</p>
+    <br>
+    <p style="color:${q.color};font-weight:800;font-size:18px;">Bonne journee ! 😊</p>
   </div>
 </div>
+
 <script>
-function selectNote(key,fieldId,val){
-  document.getElementById('hidden_'+fieldId).value=val;
-  document.querySelectorAll('[data-key="'+key+'"]').forEach(function(btn,i){btn.classList.toggle('selected',i<val);});
+var answered = {};
+var total = ${totalQuestions};
+
+function updateProgress() {
+  var count = Object.keys(answered).length;
+  var pct = Math.round((count / total) * 100);
+  document.getElementById('globalProgress').style.width = pct + '%';
 }
-function selectNPS(val){
-  document.getElementById('score_nps').value=val;
-  document.getElementById('nps-grid').querySelectorAll('.nps-btn').forEach(function(btn){btn.classList.toggle('selected',parseInt(btn.textContent)===val);});
+
+function selectNote(key, fieldId, val, idx) {
+  answered[fieldId] = val;
+  document.getElementById('hidden_' + fieldId).value = val;
+  document.querySelectorAll('[data-key="' + key + '"]').forEach(function(btn, i) {
+    btn.classList.toggle('selected', i < val);
+  });
+  var card = document.getElementById('qcard-' + idx);
+  if (card) card.classList.add('answered');
+  updateProgress();
 }
-document.getElementById('enqueteForm').addEventListener('submit',function(e){
+
+function selectNPS(val) {
+  answered['nps'] = val;
+  document.getElementById('score_nps').value = val;
+  document.getElementById('nps-grid').querySelectorAll('.nps-btn').forEach(function(btn) {
+    btn.classList.toggle('selected', parseInt(btn.textContent) === val);
+  });
+  document.getElementById('qcard-nps').classList.add('answered');
+  updateProgress();
+}
+
+document.getElementById('enqueteForm').addEventListener('submit', function(e) {
   e.preventDefault();
-  var form=e.target;
-  var data={
-    enquete_id:form.enquete_id.value,
-    note_accueil:form.note_accueil?(form.note_accueil.value||3):3,
-    note_attente:form.note_attente?(form.note_attente.value||3):3,
-    note_conseiller:form.note_conseiller?(form.note_conseiller.value||3):3,
-    note_traitement:form.note_traitement?(form.note_traitement.value||3):3,
-    note_applications:form.note_applications?(form.note_applications.value||3):3,
-    note_globale:form.note_globale?(form.note_globale.value||3):3,
-    score_nps:form.score_nps.value||7,
-    commentaire:form.commentaire.value
+  var btn = this.querySelector('.submit-btn');
+  btn.textContent = 'Envoi en cours...';
+  btn.disabled = true;
+  var form = e.target;
+  var data = {
+    enquete_id: form.enquete_id.value,
+    note_accueil: form.note_accueil ? (form.note_accueil.value || 3) : 3,
+    note_attente: form.note_attente ? (form.note_attente.value || 3) : 3,
+    note_conseiller: form.note_conseiller ? (form.note_conseiller.value || 3) : 3,
+    note_traitement: form.note_traitement ? (form.note_traitement.value || 3) : 3,
+    note_applications: form.note_applications ? (form.note_applications.value || 3) : 3,
+    note_globale: form.note_globale ? (form.note_globale.value || 3) : 3,
+    score_nps: form.score_nps.value || 7,
+    commentaire: form.commentaire.value
   };
-  fetch('/enquete/repondre',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
-  .then(function(){
-    form.style.display='none';
-    document.querySelector('.intro-card').style.display='none';
-    document.getElementById('successScreen').style.display='block';
-  }).catch(function(){
-    form.style.display='none';
-    document.querySelector('.intro-card').style.display='none';
-    document.getElementById('successScreen').style.display='block';
+  fetch('/enquete/repondre', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+  .then(function() {
+    form.style.display = 'none';
+    document.querySelector('.intro-card').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+    window.scrollTo(0, 0);
+  }).catch(function() {
+    form.style.display = 'none';
+    document.querySelector('.intro-card').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
   });
 });
 </script>
@@ -339,7 +433,7 @@ router.post('/repondre', (req, res) => {
   const {enquete_id,note_accueil,note_attente,note_conseiller,note_traitement,note_applications,note_globale,score_nps,commentaire} = req.body;
   db.run(`INSERT INTO reponses (enquete_id,note_accueil,note_attente,note_conseiller,note_traitement,note_applications,note_globale,score_nps,commentaire,date_reponse) VALUES (?,?,?,?,?,?,?,?,?,datetime('now'))`,
     [enquete_id||0,note_accueil||3,note_attente||3,note_conseiller||3,note_traitement||3,note_applications||3,note_globale||3,score_nps||7,commentaire||''],
-    function(err){
+    function(err) {
       if(err) return res.status(500).json({error:'Erreur'});
       res.json({success:true,id:this.lastID});
     }
