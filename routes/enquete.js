@@ -232,7 +232,7 @@ router.get('/demo/:type', (req, res) => {
     + npsComHTML
     + '<div class="btn-row">'
     + '<button type="submit" class="submit-btn">Envoyer mon avis ✓</button>'
-    + '<a href="/enquete/reclamation" class="rec-btn"><span style="font-size:22px;">⚠️</span><span>Reclamation</span></a>'
+    + '<a href="https://bceg-reclamations-production.up.railway.app/depot-reclamation" class="rec-btn"><span style="font-size:22px;">⚠️</span><span>Reclamation</span></a>'
     + '</div>'
     + '<p class="note-small">🔒 Vos reponses sont confidentielles</p>'
     + '</form>'
@@ -274,7 +274,7 @@ router.get('/:clientId', (req, res) => {
       + npsComHTML
       + '<div class="btn-row">'
       + '<button type="submit" class="submit-btn">Envoyer mon avis ✓</button>'
-      + '<a href="/enquete/reclamation" class="rec-btn"><span style="font-size:22px;">⚠️</span><span>Reclamation</span></a>'
+      + '<a href="https://bceg-reclamations-production.up.railway.app/depot-reclamation" class="rec-btn"><span style="font-size:22px;">⚠️</span><span>Reclamation</span></a>'
       + '</div>'
       + '<p class="note-small">🔒 Vos reponses sont confidentielles et utilisees uniquement pour ameliorer nos services.</p>'
       + '</form>'
