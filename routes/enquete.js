@@ -192,7 +192,7 @@ textarea::placeholder{color:#333;}
     <div class="intro-title">Bonjour ${prenom} 👋</div>
     <p class="intro-sub">Votre avis nous aide a ameliorer<br>nos services pour vous.</p>
     <div class="intro-time">⏱ &nbsp;MOINS DE 2 MINUTES</div>
-    <button class="btn-start" id="btnStart">COMMENCER &nbsp;→</button>
+    <button class="btn-start" onclick="demarrer()">COMMENCER &nbsp;→</button>
     <a href="https://bceg-reclamations-production.up.railway.app/depot-reclamation" class="intro-rec">⚠ Deposer une reclamation</a>
   </div>
 
@@ -244,13 +244,13 @@ var opts = [
   {v:5,e:'😄',l:'Tres satisfait'}
 ];
 
-document.getElementById('btnStart').onclick = function() {
+function demarrer() {
   var intro = document.getElementById('intro');
   intro.style.opacity = '0';
   intro.style.pointerEvents = 'none';
   setTimeout(function() { intro.style.display = 'none'; }, 400);
   renderQ();
-};
+}
 
 function renderQ() {
   var body = document.getElementById('qBody');
