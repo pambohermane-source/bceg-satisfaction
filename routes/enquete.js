@@ -15,34 +15,34 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 5*1024*1024 } });
 
 const questionnaires = {
-  'credit': { titre: 'Demande de credit', icon: '💼', color: '#2d6a9f', questions: [
+  'credit': { titre: 'Demande de credit', icon: '💼', accent: '#f5c842', questions: [
     { id: 'note_accueil', label: "Comment evaluez-vous l'accueil de votre conseiller ?", icon: '🤝' },
     { id: 'note_attente', label: "Le delai de traitement de votre dossier etait-il satisfaisant ?", icon: '⏱️' },
     { id: 'note_conseiller', label: "La clarte des informations fournies etait-elle satisfaisante ?", icon: '💬' },
     { id: 'note_traitement', label: "Le resultat obtenu correspond-il a vos attentes ?", icon: '✅' },
     { id: 'note_globale', label: "Quelle note globale donnez-vous a cette experience ?", icon: '⭐' }
   ]},
-  'ouverture': { titre: 'Ouverture de compte', icon: '🏦', color: '#1a7a4a', questions: [
+  'ouverture': { titre: 'Ouverture de compte', icon: '🏦', accent: '#42c8f5', questions: [
     { id: 'note_accueil', label: "Comment evaluez-vous la qualite de l'accueil ?", icon: '😊' },
     { id: 'note_attente', label: "Le delai de traitement de votre dossier etait-il satisfaisant ?", icon: '⏱️' },
     { id: 'note_conseiller', label: "Les explications sur les produits etaient-elles claires ?", icon: '💬' },
     { id: 'note_traitement', label: "La procedure d'ouverture etait-elle simple et rapide ?", icon: '⚡' },
     { id: 'note_globale', label: "Quelle note globale donnez-vous a cette experience ?", icon: '⭐' }
   ]},
-  'gestionnaire': { titre: 'Echange avec votre gestionnaire', icon: '🤝', color: '#7b3fa0', questions: [
+  'gestionnaire': { titre: 'Echange avec votre gestionnaire', icon: '🤝', accent: '#c842f5', questions: [
     { id: 'note_accueil', label: "Votre gestionnaire etait-il disponible et a l'ecoute ?", icon: '👂' },
     { id: 'note_conseiller', label: "Les conseils prodigues etaient-ils pertinents et adaptes ?", icon: '💡' },
     { id: 'note_traitement', label: "Votre demande a-t-elle ete traitee de maniere satisfaisante ?", icon: '✅' },
     { id: 'note_globale', label: "Quelle note globale donnez-vous a cet echange ?", icon: '⭐' }
   ]},
-  'digital': { titre: 'Services digitaux BCEG', icon: '📱', color: '#c0622a', questions: [
+  'digital': { titre: 'Services digitaux BCEG', icon: '📱', accent: '#42f5a7', questions: [
     { id: 'note_accueil', label: "La plateforme B-Online est-elle facile a utiliser ?", icon: '🖥️' },
     { id: 'note_attente', label: "La plateforme est-elle disponible et rapide ?", icon: '⚡' },
     { id: 'note_conseiller', label: "En cas de probleme, le support etait-il efficace ?", icon: '🛠️' },
     { id: 'note_applications', label: "Les fonctionnalites repondent-elles a vos besoins ?", icon: '🎯' },
     { id: 'note_globale', label: "Quelle note globale donnez-vous aux services digitaux ?", icon: '⭐' }
   ]},
-  'default': { titre: 'Votre visite en agence', icon: '🏦', color: '#4d553d', questions: [
+  'default': { titre: 'Votre visite en agence', icon: '🏦', accent: '#f5c842', questions: [
     { id: 'note_accueil', label: "Comment evaluez-vous l'accueil a votre arrivee en agence ?", icon: '😊' },
     { id: 'note_attente', label: "Etes-vous satisfait(e) du temps d'attente ?", icon: '⏱️' },
     { id: 'note_conseiller', label: "Comment evaluez-vous la qualite de votre conseiller ?", icon: '🤝' },
@@ -63,216 +63,318 @@ function detecterType(t) {
 }
 
 function genererPage(q, client, isDemo) {
-  var color = q.color;
+  var accent = q.accent;
   var total = q.questions.length + 2;
   var enqueteId = client.operation_id || 0;
   var prenom = isDemo ? 'Demo' : (client.prenom || 'Client');
   var agence = client.agence_nom || 'BCEG';
-
   var qData = JSON.stringify(q.questions.map(function(quest) {
     return { id: quest.id, label: quest.label, icon: quest.icon };
   }));
 
-  return '<!DOCTYPE html>\n<html lang="fr">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">\n<title>Enquete BCEG</title>\n<style>\n'
-    + '*{box-sizing:border-box;margin:0;padding:0;}\n'
-    + 'body{font-family:Segoe UI,Arial,sans-serif;background:#f0f3f0;min-height:100vh;}\n'
-    + '.page{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}\n'
-    + '.top-bar{background:' + color + ';padding:20px 20px 32px;}\n'
-    + '.top-bar .logo{color:rgba(255,255,255,0.8);font-size:12px;font-weight:700;letter-spacing:2px;margin-bottom:12px;}\n'
-    + '.top-bar .titre{color:white;font-size:20px;font-weight:800;}\n'
-    + '.top-bar .agence{color:rgba(255,255,255,0.7);font-size:13px;margin-top:4px;}\n'
-    + '.prog-wrap{background:white;padding:16px 20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);}\n'
-    + '.prog-info{display:flex;justify-content:space-between;font-size:12px;color:#888;font-weight:600;margin-bottom:8px;}\n'
-    + '.prog-bar{height:8px;background:#e8ede8;border-radius:8px;overflow:hidden;}\n'
-    + '.prog-fill{height:8px;border-radius:8px;background:' + color + ';transition:width 0.5s ease;}\n'
-    + '.body{flex:1;padding:20px;}\n'
-    + '.q-card{background:white;border-radius:20px;padding:28px 22px;box-shadow:0 4px 20px rgba(0,0,0,0.08);margin-bottom:16px;display:none;}\n'
-    + '.q-card.active{display:block;animation:fadeUp 0.35s ease;}\n'
-    + '@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}\n'
-    + '.q-icon{font-size:44px;margin-bottom:14px;display:block;}\n'
-    + '.q-label{font-size:17px;font-weight:800;color:#1a1a1a;line-height:1.4;margin-bottom:22px;}\n'
-    + '.q-num{font-size:11px;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}\n'
-    + '.opts{display:flex;flex-direction:column;gap:10px;}\n'
-    + '.opt{display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px solid #e8e8e8;border-radius:14px;background:#fafafa;cursor:pointer;transition:all 0.2s;width:100%;text-align:left;}\n'
-    + '.opt:hover{border-color:' + color + ';background:' + color + '10;}\n'
-    + '.opt.sel{border-color:' + color + ';background:' + color + '15;}\n'
-    + '.opt .em{font-size:22px;flex-shrink:0;}\n'
-    + '.opt .tx{font-size:14px;font-weight:600;color:#333;}\n'
-    + '.opt .ck{margin-left:auto;width:22px;height:22px;border-radius:50%;border:2px solid #ddd;background:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;}\n'
-    + '.opt.sel .ck{background:' + color + ';border-color:' + color + ';}\n'
-    + '.nps-row{display:flex;flex-wrap:wrap;gap:8px;}\n'
-    + '.nps-b{flex:1;min-width:36px;padding:12px 4px;border:2px solid #e8e8e8;border-radius:12px;background:#fafafa;cursor:pointer;font-size:15px;font-weight:800;color:#555;text-align:center;transition:all 0.2s;}\n'
-    + '.nps-b:hover{border-color:' + color + ';}\n'
-    + '.nps-b.sel{background:' + color + ';border-color:' + color + ';color:white;}\n'
-    + '.nps-lbl{display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-top:8px;}\n'
-    + 'textarea{width:100%;padding:14px;border:2px solid #e8e8e8;border-radius:14px;font-size:14px;font-family:inherit;resize:none;min-height:110px;background:#fafafa;transition:all 0.2s;}\n'
-    + 'textarea:focus{outline:none;border-color:' + color + ';background:white;}\n'
-    + '.opt-tag{background:' + color + '15;color:' + color + ';padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;display:inline-block;margin-bottom:12px;}\n'
-    + '.nav{background:white;padding:16px 20px;box-shadow:0 -2px 12px rgba(0,0,0,0.06);display:flex;gap:10px;position:sticky;bottom:0;}\n'
-    + '.btn-back{flex:1;padding:14px;border:2px solid #e0e0e0;border-radius:14px;background:white;font-size:14px;font-weight:700;color:#888;cursor:pointer;display:none;}\n'
-    + '.btn-next{flex:2;padding:14px;border:none;border-radius:14px;font-size:15px;font-weight:800;color:white;cursor:pointer;background:' + color + ';box-shadow:0 6px 20px ' + color + '40;transition:all 0.2s;}\n'
-    + '.btn-next:disabled{opacity:0.45;cursor:not-allowed;}\n'
-    + '.btn-rec{display:block;text-align:center;padding:12px;color:' + color + ';font-size:13px;font-weight:700;text-decoration:none;margin-top:8px;}\n'
-    + '.success{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px;text-align:center;}\n'
-    + '.success.show{display:flex;}\n'
-    + '.intro{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px;text-align:center;}\n'
-    + '.intro .big{font-size:80px;margin-bottom:20px;}\n'
-    + '.intro h2{font-size:24px;font-weight:900;margin-bottom:10px;}\n'
-    + '.intro p{color:#888;font-size:15px;line-height:1.6;margin-bottom:28px;}\n'
-    + '.intro .badge{background:' + color + '15;color:' + color + ';padding:8px 16px;border-radius:20px;font-size:13px;font-weight:700;margin-bottom:28px;display:inline-block;}\n'
-    + '.btn-start{padding:16px 48px;background:' + color + ';color:white;border:none;border-radius:18px;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 10px 28px ' + color + '40;margin-bottom:12px;}\n'
-    + '</style>\n</head>\n<body>\n<div class="page">\n'
-    + '<div class="intro" id="intro">\n'
-    + '  <div class="big">' + q.icon + '</div>\n'
-    + '  <h2>Bonjour ' + prenom + ' ! 👋</h2>\n'
-    + '  <p>Votre avis compte pour la BCEG.<br>Cette enquete prend moins de <b>2 minutes</b>.</p>\n'
-    + '  <div class="badge">⏱️ Moins de 2 minutes</div>\n'
-    + '  <button class="btn-start" id="btnStart">Commencer →</button>\n'
-    + '  <a href="https://bceg-reclamations-production.up.railway.app/depot-reclamation" class="btn-rec">⚠️ Deposer une reclamation</a>\n'
-    + '</div>\n'
-    + '<div id="questionnaire" style="display:none;flex:1;display:none;flex-direction:column;">\n'
-    + '  <div class="top-bar">\n'
-    + '    <div class="logo">BCEG</div>\n'
-    + '    <div class="titre">' + q.icon + ' ' + q.titre + '</div>\n'
-    + '    <div class="agence">' + agence + (isDemo ? ' · Mode demonstration' : '') + '</div>\n'
-    + '  </div>\n'
-    + '  <div class="prog-wrap">\n'
-    + '    <div class="prog-info"><span id="progTxt">Question 1 sur ' + total + '</span><span id="progPct">0%</span></div>\n'
-    + '    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>\n'
-    + '  </div>\n'
-    + '  <div class="body" id="qBody"></div>\n'
-    + '  <div class="nav">\n'
-    + '    <button class="btn-back" id="btnBack" onclick="precedent()">← Retour</button>\n'
-    + '    <button class="btn-next" id="btnNext" disabled onclick="suivant()">Continuer →</button>\n'
-    + '  </div>\n'
-    + '</div>\n'
-    + '<div class="success" id="success">\n'
-    + '  <div style="font-size:80px;margin-bottom:20px;">🎉</div>\n'
-    + '  <h2 style="font-size:26px;font-weight:900;margin-bottom:10px;">Merci !</h2>\n'
-    + '  <p style="color:#888;font-size:15px;line-height:1.6;">Votre avis a bien ete enregistre.<br>La BCEG vous remercie de votre confiance.</p>\n'
-    + '  <div style="font-size:40px;margin-top:20px;">😊</div>\n'
-    + '</div>\n'
-    + '</div>\n'
-    + '<script>\n'
-    + 'var qs = ' + qData + ';\n'
-    + 'var total = ' + total + ';\n'
-    + 'var cur = 0;\n'
-    + 'var rep = {};\n'
-    + 'var opts = [{v:1,e:"😞",l:"Tres insatisfait"},{v:2,e:"😕",l:"Insatisfait"},{v:3,e:"😐",l:"Neutre"},{v:4,e:"🙂",l:"Satisfait"},{v:5,e:"😄",l:"Tres satisfait"}];\n'
-    + '\n'
-    + 'document.getElementById("btnStart").onclick = function() {\n'
-    + '  document.getElementById("intro").style.display = "none";\n'
-    + '  var q = document.getElementById("questionnaire");\n'
-    + '  q.style.display = "flex";\n'
-    + '  q.style.flexDirection = "column";\n'
-    + '  q.style.flex = "1";\n'
-    + '  renderQ();\n'
-    + '};\n'
-    + '\n'
-    + 'function renderQ() {\n'
-    + '  var body = document.getElementById("qBody");\n'
-    + '  var pct = Math.round(((cur+1)/total)*100);\n'
-    + '  document.getElementById("progFill").style.width = pct + "%";\n'
-    + '  document.getElementById("progTxt").textContent = "Question " + (cur+1) + " sur " + total;\n'
-    + '  document.getElementById("progPct").textContent = pct + "%";\n'
-    + '  document.getElementById("btnBack").style.display = cur > 0 ? "block" : "none";\n'
-    + '  document.getElementById("btnNext").disabled = true;\n'
-    + '  document.getElementById("btnNext").textContent = cur === total-1 ? "Envoyer mon avis ✓" : "Continuer →";\n'
-    + '\n'
-    + '  var html = "";\n'
-    + '  if (cur < qs.length) {\n'
-    + '    var q = qs[cur];\n'
-    + '    var btns = opts.map(function(o) {\n'
-    + '      var s = rep[q.id] === o.v ? " sel" : "";\n'
-    + '      return "<button class=\\"opt" + s + "\\" onclick=\\"selQ(this,\'" + q.id + "\'," + o.v + ")\\">"\n'
-    + '        + "<span class=\\"em\\">" + o.e + "</span>"\n'
-    + '        + "<span class=\\"tx\\">" + o.l + "</span>"\n'
-    + '        + "<span class=\\"ck\\">" + (s?" ✓":"") + "</span>"\n'
-    + '        + "</button>";\n'
-    + '    }).join("");\n'
-    + '    html = "<div style=\\"animation:fadeUp 0.3s ease\\">"\n'
-    + '      + "<div class=\\"q-num\\">Question " + (cur+1) + " sur " + total + "</div>"\n'
-    + '      + "<div class=\\"q-icon\\">" + q.icon + "</div>"\n'
-    + '      + "<div class=\\"q-label\\">" + q.label + "</div>"\n'
-    + '      + "<div class=\\"opts\\">" + btns + "</div>"\n'
-    + '      + "</div>";\n'
-    + '    if (rep[q.id]) document.getElementById("btnNext").disabled = false;\n'
-    + '  } else if (cur === qs.length) {\n'
-    + '    var nbtns = [0,1,2,3,4,5,6,7,8,9,10].map(function(n) {\n'
-    + '      var s = rep.nps === n ? " sel" : "";\n'
-    + '      return "<button class=\\"nps-b" + s + "\\" onclick=\\"selNPS(" + n + ")\\">" + n + "</button>";\n'
-    + '    }).join("");\n'
-    + '    html = "<div style=\\"animation:fadeUp 0.3s ease\\">"\n'
-    + '      + "<div class=\\"q-num\\">Question " + (cur+1) + " sur " + total + "</div>"\n'
-    + '      + "<div class=\\"q-icon\\">🎯</div>"\n'
-    + '      + "<div class=\\"q-label\\">Sur une echelle de 0 a 10, recommanderiez-vous la BCEG a un proche ?</div>"\n'
-    + '      + "<div class=\\"nps-row\\">" + nbtns + "</div>"\n'
-    + '      + "<div class=\\"nps-lbl\\"><span>😞 Pas du tout</span><span>😄 Certainement</span></div>"\n'
-    + '      + "</div>";\n'
-    + '    if (rep.nps !== undefined) document.getElementById("btnNext").disabled = false;\n'
-    + '  } else {\n'
-    + '    html = "<div style=\\"animation:fadeUp 0.3s ease\\">"\n'
-    + '      + "<div class=\\"q-num\\">Question " + (cur+1) + " sur " + total + " — Optionnel</div>"\n'
-    + '      + "<div class=\\"q-icon\\">💬</div>"\n'
-    + '      + "<div class=\\"q-label\\">Un commentaire ou une suggestion ?</div>"\n'
-    + '      + "<textarea id=\\"com\\" placeholder=\\"Partagez votre experience...\\"></textarea>"\n'
-    + '      + "</div>";\n'
-    + '    document.getElementById("btnNext").disabled = false;\n'
-    + '  }\n'
-    + '\n'
-    + '  body.innerHTML = "<div style=\\"background:white;border-radius:20px;padding:24px 20px;box-shadow:0 4px 20px rgba(0,0,0,0.08);\\">" + html + "</div>";\n'
-    + '  body.scrollTop = 0;\n'
-    + '}\n'
-    + '\n'
-    + 'function selQ(btn, key, val) {\n'
-    + '  rep[key] = val;\n'
-    + '  document.querySelectorAll(".opt").forEach(function(b){ b.classList.remove("sel"); b.querySelector(".ck").textContent = ""; });\n'
-    + '  btn.classList.add("sel");\n'
-    + '  btn.querySelector(".ck").textContent = " ✓";\n'
-    + '  document.getElementById("btnNext").disabled = false;\n'
-    + '  setTimeout(function(){ if(cur < total-1) suivant(); }, 350);\n'
-    + '}\n'
-    + '\n'
-    + 'function selNPS(n) {\n'
-    + '  rep.nps = n;\n'
-    + '  document.querySelectorAll(".nps-b").forEach(function(b){ b.classList.toggle("sel", parseInt(b.textContent) === n); });\n'
-    + '  document.getElementById("btnNext").disabled = false;\n'
-    + '  setTimeout(suivant, 350);\n'
-    + '}\n'
-    + '\n'
-    + 'function suivant() {\n'
-    + '  if (cur === total-1) { envoyer(); return; }\n'
-    + '  if (cur === qs.length+1) { var c = document.getElementById("com"); if(c) rep.com = c.value; }\n'
-    + '  cur++;\n'
-    + '  renderQ();\n'
-    + '}\n'
-    + '\n'
-    + 'function precedent() {\n'
-    + '  if (cur > 0) { cur--; renderQ(); }\n'
-    + '}\n'
-    + '\n'
-    + 'function envoyer() {\n'
-    + '  var c = document.getElementById("com");\n'
-    + '  if (c) rep.com = c.value;\n'
-    + '  var btn = document.getElementById("btnNext");\n'
-    + '  btn.textContent = "Envoi...";\n'
-    + '  btn.disabled = true;\n'
-    + '  var data = {\n'
-    + '    enquete_id: ' + enqueteId + ',\n'
-    + '    note_accueil: rep.note_accueil||3,\n'
-    + '    note_attente: rep.note_attente||3,\n'
-    + '    note_conseiller: rep.note_conseiller||3,\n'
-    + '    note_traitement: rep.note_traitement||3,\n'
-    + '    note_applications: rep.note_applications||3,\n'
-    + '    note_globale: rep.note_globale||3,\n'
-    + '    score_nps: rep.nps !== undefined ? rep.nps : 7,\n'
-    + '    commentaire: rep.com||""\n'
-    + '  };\n'
-    + '  fetch("/enquete/repondre",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)})\n'
-    + '  .then(function(){ document.getElementById("questionnaire").style.display="none"; document.getElementById("success").style.display="flex"; })\n'
-    + '  .catch(function(){ document.getElementById("questionnaire").style.display="none"; document.getElementById("success").style.display="flex"; });\n'
-    + '}\n'
-    + '</script>\n</body>\n</html>';
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>Enquete BCEG</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0a0c0a;color:#fff;min-height:100vh;overflow-x:hidden;}
+
+/* PARTICULES DE FOND */
+.bg-glow{position:fixed;top:-20%;left:-20%;width:60%;height:60%;background:radial-gradient(ellipse,${accent}18 0%,transparent 70%);pointer-events:none;z-index:0;animation:glowMove 8s ease-in-out infinite;}
+.bg-glow2{position:fixed;bottom:-20%;right:-20%;width:50%;height:50%;background:radial-gradient(ellipse,#4d553d22 0%,transparent 70%);pointer-events:none;z-index:0;animation:glowMove 10s ease-in-out infinite reverse;}
+@keyframes glowMove{0%,100%{transform:scale(1) translate(0,0);}50%{transform:scale(1.2) translate(5%,5%);}}
+
+/* PAGE */
+.page{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative;z-index:1;}
+
+/* INTRO */
+.intro{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 32px;text-align:center;}
+.intro-logo{font-size:13px;font-weight:800;letter-spacing:4px;color:${accent};opacity:0.8;margin-bottom:40px;}
+.intro-icon{font-size:72px;margin-bottom:24px;filter:drop-shadow(0 0 24px ${accent}88);animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+.intro-title{font-size:28px;font-weight:900;color:#fff;margin-bottom:10px;line-height:1.2;}
+.intro-sub{font-size:15px;color:#888;line-height:1.7;margin-bottom:8px;}
+.intro-time{font-size:12px;color:${accent};font-weight:700;letter-spacing:1px;margin-bottom:40px;opacity:0.9;}
+.btn-start{padding:18px 52px;background:transparent;color:${accent};border:2px solid ${accent};border-radius:40px;font-size:17px;font-weight:800;cursor:pointer;letter-spacing:1px;transition:all 0.3s;position:relative;overflow:hidden;}
+.btn-start::before{content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:${accent}22;border-radius:50%;transform:translate(-50%,-50%);transition:width 0.5s,height 0.5s;}
+.btn-start:hover::before,.btn-start:active::before{width:300px;height:300px;}
+.btn-start:hover{box-shadow:0 0 32px ${accent}66;transform:translateY(-2px);}
+.intro-rec{display:block;margin-top:24px;color:#555;font-size:13px;text-decoration:none;transition:color 0.2s;}
+.intro-rec:hover{color:${accent};}
+
+/* HEADER */
+.q-header{padding:24px 24px 16px;border-bottom:1px solid #1a1a1a;}
+.q-header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.q-logo{font-size:12px;font-weight:800;letter-spacing:3px;color:${accent};opacity:0.8;}
+.q-agence{font-size:11px;color:#444;font-weight:600;}
+
+/* PROGRESS */
+.prog-wrap{padding:0 24px 16px;}
+.prog-info{display:flex;justify-content:space-between;font-size:11px;color:#444;font-weight:700;letter-spacing:0.5px;margin-bottom:8px;}
+.prog-info span:last-child{color:${accent};}
+.prog-bar{height:3px;background:#1a1a1a;border-radius:3px;overflow:hidden;}
+.prog-fill{height:3px;border-radius:3px;background:linear-gradient(90deg,#4d553d,${accent});transition:width 0.5s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 8px ${accent}88;}
+
+/* BODY */
+.q-body{flex:1;padding:24px;overflow-y:auto;}
+.q-card{animation:slideUp 0.4s cubic-bezier(0.4,0,0.2,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+.q-num{font-size:11px;color:#444;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;}
+.q-icon{font-size:48px;margin-bottom:16px;display:block;filter:drop-shadow(0 0 16px ${accent}66);}
+.q-label{font-size:20px;font-weight:800;color:#fff;line-height:1.4;margin-bottom:28px;}
+
+/* OPTIONS */
+.opts{display:flex;flex-direction:column;gap:10px;}
+.opt{display:flex;align-items:center;gap:14px;padding:16px 18px;border:1px solid #1e1e1e;border-radius:16px;background:#0f120f;cursor:pointer;transition:all 0.25s;width:100%;text-align:left;position:relative;overflow:hidden;}
+.opt::before{content:'';position:absolute;inset:0;background:${accent}08;opacity:0;transition:opacity 0.2s;}
+.opt:hover::before{opacity:1;}
+.opt:active{transform:scale(0.97);}
+.opt.sel{border-color:${accent};background:#0f120f;box-shadow:0 0 0 1px ${accent},inset 0 0 20px ${accent}08;}
+.opt .em{font-size:22px;flex-shrink:0;}
+.opt .tx{font-size:14px;font-weight:600;color:#aaa;transition:color 0.2s;}
+.opt.sel .tx{color:#fff;}
+.opt .ck{margin-left:auto;width:22px;height:22px;border-radius:50%;border:1px solid #333;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;transition:all 0.2s;}
+.opt.sel .ck{background:${accent};border-color:${accent};color:#000;font-weight:900;}
+
+/* NPS */
+.nps-wrap{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:8px;}
+.nps-wrap2{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.nps-b{padding:14px 2px;border:1px solid #1e1e1e;border-radius:12px;background:#0f120f;cursor:pointer;font-size:16px;font-weight:800;color:#555;text-align:center;transition:all 0.2s;}
+.nps-b:hover{border-color:${accent}66;color:#fff;}
+.nps-b:active{transform:scale(0.92);}
+.nps-b.sel{border-color:${accent};color:${accent};box-shadow:0 0 16px ${accent}44;}
+.nps-lbl{display:flex;justify-content:space-between;font-size:10px;color:#444;margin-top:8px;letter-spacing:0.5px;}
+
+/* COMMENTAIRE */
+textarea{width:100%;padding:16px;border:1px solid #1e1e1e;border-radius:16px;font-size:14px;font-family:inherit;resize:none;min-height:120px;background:#0f120f;color:#fff;transition:all 0.2s;}
+textarea:focus{outline:none;border-color:${accent};box-shadow:0 0 0 1px ${accent}44;}
+textarea::placeholder{color:#333;}
+.opt-label{font-size:11px;color:#444;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;display:block;}
+
+/* NAVIGATION */
+.q-nav{padding:16px 24px 32px;border-top:1px solid #111;}
+.nav-btns{display:flex;gap:10px;}
+.btn-back{flex:1;padding:16px;border:1px solid #1e1e1e;border-radius:16px;background:transparent;font-size:14px;font-weight:700;color:#444;cursor:pointer;transition:all 0.2s;display:none;}
+.btn-back:hover{border-color:#333;color:#888;}
+.btn-next{flex:2;padding:16px;border:2px solid ${accent};border-radius:16px;background:transparent;font-size:15px;font-weight:800;color:${accent};cursor:pointer;letter-spacing:0.5px;transition:all 0.3s;position:relative;overflow:hidden;}
+.btn-next::after{content:'';position:absolute;inset:0;background:${accent};opacity:0;transition:opacity 0.3s;}
+.btn-next:hover::after{opacity:0.08;}
+.btn-next:hover{box-shadow:0 0 24px ${accent}44;}
+.btn-next:active{transform:scale(0.97);}
+.btn-next:disabled{opacity:0.2;cursor:not-allowed;box-shadow:none;}
+
+/* SUCCES */
+.success{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px;text-align:center;}
+.success.show{display:flex;}
+.success-icon{font-size:80px;margin-bottom:24px;animation:pop 0.6s ease;filter:drop-shadow(0 0 32px ${accent});}
+@keyframes pop{0%{transform:scale(0);opacity:0;}60%{transform:scale(1.2);}100%{transform:scale(1);opacity:1;}}
+.success-title{font-size:28px;font-weight:900;color:#fff;margin-bottom:12px;}
+.success-sub{font-size:15px;color:#555;line-height:1.7;}
+
+/* GRID LINES DECOR */
+.grid-decor{position:fixed;inset:0;background-image:linear-gradient(#ffffff04 1px,transparent 1px),linear-gradient(90deg,#ffffff04 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+</style>
+</head>
+<body>
+<div class="grid-decor"></div>
+<div class="bg-glow"></div>
+<div class="bg-glow2"></div>
+
+<div class="page">
+
+  <!-- INTRO -->
+  <div class="intro" id="intro">
+    <div class="intro-logo">BCEG · SATISFACTION</div>
+    <div class="intro-icon">${q.icon}</div>
+    <div class="intro-title">Bonjour ${prenom} 👋</div>
+    <p class="intro-sub">Votre avis nous aide a ameliorer<br>nos services pour vous.</p>
+    <div class="intro-time">⏱ &nbsp;MOINS DE 2 MINUTES</div>
+    <button class="btn-start" id="btnStart">COMMENCER &nbsp;→</button>
+    <a href="https://bceg-reclamations-production.up.railway.app/depot-reclamation" class="intro-rec">⚠ Deposer une reclamation</a>
+  </div>
+
+  <!-- QUESTIONNAIRE -->
+  <div id="questionnaire" style="display:none;flex:1;flex-direction:column;min-height:100vh;">
+    <div class="q-header">
+      <div class="q-header-top">
+        <span class="q-logo">BCEG</span>
+        <span class="q-agence">${agence}${isDemo ? ' · DEMO' : ''}</span>
+      </div>
+      <div class="prog-wrap" style="padding:0;">
+        <div class="prog-info">
+          <span id="progTxt">QUESTION 1 SUR ${total}</span>
+          <span id="progPct">0%</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="q-body" id="qBody"></div>
+
+    <div class="q-nav">
+      <div class="nav-btns">
+        <button class="btn-back" id="btnBack" onclick="precedent()">← Retour</button>
+        <button class="btn-next" id="btnNext" disabled onclick="suivant()">Continuer →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCCES -->
+  <div class="success" id="success">
+    <div class="success-icon">✦</div>
+    <div class="success-title">Merci !</div>
+    <div class="success-sub">Votre avis a bien ete enregistre.<br>La BCEG vous remercie<br>de votre confiance.</div>
+  </div>
+
+</div>
+
+<script>
+var qs = ${qData};
+var total = ${total};
+var cur = 0;
+var rep = {};
+var opts = [
+  {v:1,e:'😞',l:'Tres insatisfait'},
+  {v:2,e:'😕',l:'Insatisfait'},
+  {v:3,e:'😐',l:'Neutre'},
+  {v:4,e:'🙂',l:'Satisfait'},
+  {v:5,e:'😄',l:'Tres satisfait'}
+];
+
+document.getElementById('btnStart').onclick = function() {
+  document.getElementById('intro').style.display = 'none';
+  var el = document.getElementById('questionnaire');
+  el.style.display = 'flex';
+  el.style.flexDirection = 'column';
+  renderQ();
+};
+
+function renderQ() {
+  var body = document.getElementById('qBody');
+  var pct = Math.round(((cur+1)/total)*100);
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progTxt').textContent = 'QUESTION ' + (cur+1) + ' SUR ' + total;
+  document.getElementById('progPct').textContent = pct + '%';
+  document.getElementById('btnBack').style.display = cur > 0 ? 'block' : 'none';
+  document.getElementById('btnNext').disabled = true;
+  document.getElementById('btnNext').textContent = cur === total-1 ? 'ENVOYER MON AVIS  ✓' : 'CONTINUER  →';
+
+  var html = '';
+  if (cur < qs.length) {
+    var q = qs[cur];
+    var btns = opts.map(function(o) {
+      var s = rep[q.id] === o.v ? ' sel' : '';
+      return '<button class="opt' + s + '" onclick="selQ(this,\'' + q.id + '\',' + o.v + ')">'
+        + '<span class="em">' + o.e + '</span>'
+        + '<span class="tx">' + o.l + '</span>'
+        + '<span class="ck">' + (s ? '✓' : '') + '</span>'
+        + '</button>';
+    }).join('');
+    html = '<div class="q-card">'
+      + '<div class="q-num">Q' + (cur+1) + ' &nbsp;/&nbsp; ' + total + '</div>'
+      + '<span class="q-icon">' + q.icon + '</span>'
+      + '<div class="q-label">' + q.label + '</div>'
+      + '<div class="opts">' + btns + '</div>'
+      + '</div>';
+    if (rep[q.id]) document.getElementById('btnNext').disabled = false;
+
+  } else if (cur === qs.length) {
+    var nbtns = [0,1,2,3,4,5,6,7,8,9,10].map(function(n) {
+      var s = rep.nps === n ? ' sel' : '';
+      return '<button class="nps-b' + s + '" onclick="selNPS(' + n + ')">' + n + '</button>';
+    });
+    html = '<div class="q-card">'
+      + '<div class="q-num">Q' + (cur+1) + ' &nbsp;/&nbsp; ' + total + '</div>'
+      + '<span class="q-icon">🎯</span>'
+      + '<div class="q-label">Sur une echelle de 0 a 10, recommanderiez-vous la BCEG a un proche ?</div>'
+      + '<div class="nps-wrap">' + nbtns.slice(0,6).join('') + '</div>'
+      + '<div class="nps-wrap2">' + nbtns.slice(6).join('') + '</div>'
+      + '<div class="nps-lbl"><span>😞 PAS DU TOUT</span><span>CERTAINEMENT 😄</span></div>'
+      + '</div>';
+    if (rep.nps !== undefined) document.getElementById('btnNext').disabled = false;
+
+  } else {
+    html = '<div class="q-card">'
+      + '<div class="q-num">Q' + (cur+1) + ' &nbsp;/&nbsp; ' + total + ' &nbsp;·&nbsp; OPTIONNEL</div>'
+      + '<span class="q-icon">💬</span>'
+      + '<div class="q-label">Un commentaire ou une suggestion ?</div>'
+      + '<textarea id="com" placeholder="Partagez votre experience..."></textarea>'
+      + '</div>';
+    document.getElementById('btnNext').disabled = false;
+  }
+
+  body.innerHTML = html;
+  body.scrollTop = 0;
+}
+
+function selQ(btn, key, val) {
+  rep[key] = val;
+  document.querySelectorAll('.opt').forEach(function(b) {
+    b.classList.remove('sel');
+    b.querySelector('.ck').textContent = '';
+  });
+  btn.classList.add('sel');
+  btn.querySelector('.ck').textContent = '✓';
+  document.getElementById('btnNext').disabled = false;
+  setTimeout(function() { if (cur < total-1) suivant(); }, 350);
+}
+
+function selNPS(n) {
+  rep.nps = n;
+  document.querySelectorAll('.nps-b').forEach(function(b) {
+    b.classList.toggle('sel', parseInt(b.textContent) === n);
+  });
+  document.getElementById('btnNext').disabled = false;
+  setTimeout(suivant, 350);
+}
+
+function suivant() {
+  if (cur === total-1) { envoyer(); return; }
+  var c = document.getElementById('com');
+  if (c) rep.com = c.value;
+  cur++;
+  renderQ();
+}
+
+function precedent() {
+  if (cur > 0) { cur--; renderQ(); }
+}
+
+function envoyer() {
+  var c = document.getElementById('com');
+  if (c) rep.com = c.value;
+  var btn = document.getElementById('btnNext');
+  btn.textContent = 'ENVOI...';
+  btn.disabled = true;
+  fetch('/enquete/repondre', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      enquete_id: ${enqueteId},
+      note_accueil: rep.note_accueil||3,
+      note_attente: rep.note_attente||3,
+      note_conseiller: rep.note_conseiller||3,
+      note_traitement: rep.note_traitement||3,
+      note_applications: rep.note_applications||3,
+      note_globale: rep.note_globale||3,
+      score_nps: rep.nps !== undefined ? rep.nps : 7,
+      commentaire: rep.com||''
+    })
+  })
+  .then(function() {
+    document.getElementById('questionnaire').style.display = 'none';
+    document.getElementById('success').classList.add('show');
+  })
+  .catch(function() {
+    document.getElementById('questionnaire').style.display = 'none';
+    document.getElementById('success').classList.add('show');
+  });
+}
+</script>
+</body></html>`;
 }
 
 router.get('/reclamation', (req, res) => {
