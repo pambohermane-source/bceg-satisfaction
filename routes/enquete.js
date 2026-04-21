@@ -91,7 +91,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0a0c0a;color:#fff;min-h
 .page{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative;z-index:1;}
 
 /* INTRO */
-.intro{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 32px;text-align:center;}
+.intro{position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0c0a;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;text-align:center;z-index:50;transition:opacity 0.4s ease;}
 .intro-logo{font-size:13px;font-weight:800;letter-spacing:4px;color:${accent};opacity:0.8;margin-bottom:40px;}
 .intro-icon{font-size:72px;margin-bottom:24px;filter:drop-shadow(0 0 24px ${accent}88);animation:float 3s ease-in-out infinite;}
 @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
@@ -102,8 +102,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0a0c0a;color:#fff;min-h
 .btn-start::before{content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:${accent}22;border-radius:50%;transform:translate(-50%,-50%);transition:width 0.5s,height 0.5s;}
 .btn-start:hover::before,.btn-start:active::before{width:300px;height:300px;}
 .btn-start:hover{box-shadow:0 0 32px ${accent}66;transform:translateY(-2px);}
-.intro-rec{display:block;margin-top:24px;color:#555;font-size:13px;text-decoration:none;transition:color 0.2s;}
-.intro-rec:hover{color:${accent};}
+.intro-rec{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;padding:14px 32px;color:#c0622a;font-size:14px;font-weight:700;text-decoration:none;border:1px solid #c0622a44;border-radius:40px;transition:all 0.3s;letter-spacing:0.5px;}
+.intro-rec:hover{border-color:#c0622a;background:#c0622a11;box-shadow:0 0 20px #c0622a33;}
 
 /* HEADER */
 .q-header{padding:24px 24px 16px;border-bottom:1px solid #1a1a1a;}
@@ -197,7 +197,7 @@ textarea::placeholder{color:#333;}
   </div>
 
   <!-- QUESTIONNAIRE -->
-  <div id="questionnaire" style="display:none;flex:1;flex-direction:column;min-height:100vh;">
+  <div id="questionnaire" style="flex:1;flex-direction:column;min-height:100vh;display:flex;">
     <div class="q-header">
       <div class="q-header-top">
         <span class="q-logo">BCEG</span>
@@ -245,10 +245,10 @@ var opts = [
 ];
 
 document.getElementById('btnStart').onclick = function() {
-  document.getElementById('intro').style.display = 'none';
-  var el = document.getElementById('questionnaire');
-  el.style.display = 'flex';
-  el.style.flexDirection = 'column';
+  var intro = document.getElementById('intro');
+  intro.style.opacity = '0';
+  intro.style.pointerEvents = 'none';
+  setTimeout(function() { intro.style.display = 'none'; }, 400);
   renderQ();
 };
 
