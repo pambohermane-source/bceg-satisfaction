@@ -161,7 +161,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f3f0;color:#2c2c2c;}
 @keyframes pop{0%{transform:scale(0);}50%{transform:scale(1.3);}100%{transform:scale(1);}}
 
 /* INTRO */
-.intro-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;z-index:150;}
+.intro-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;z-index:150;transition:opacity 0.4s ease;}
 .intro-icon{font-size:80px;margin-bottom:24px;animation:float 3s ease-in-out infinite;}
 @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
 .intro-title{font-size:26px;font-weight:900;color:#2c2c2c;margin-bottom:8px;}
@@ -184,7 +184,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f3f0;color:#2c2c2c;}
 </div>
 
 <!-- QUESTIONNAIRE -->
-<div class="screen" id="mainScreen" style="display:none;">
+<div class="screen" id="mainScreen">
   <div class="header" id="mainHeader">
     <div class="header-top">
       <span class="bceg-logo">BCEG</span>
@@ -347,8 +347,10 @@ function precedent() {
 }
 
 function demarrer() {
-  document.getElementById('introScreen').style.display='none';
-  document.getElementById('mainScreen').style.display='flex';
+  var intro = document.getElementById('introScreen');
+  intro.style.opacity='0';
+  intro.style.pointerEvents='none';
+  setTimeout(function(){ intro.style.display='none'; }, 400);
   updateUI();
 }
 
