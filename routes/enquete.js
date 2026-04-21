@@ -159,6 +159,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f3f0;color:#2c2c2c;}
 .success-screen.show{display:flex;}
 .success-anim{font-size:80px;animation:pop 0.6s cubic-bezier(0.36,0.07,0.19,0.97);}
 @keyframes pop{0%{transform:scale(0);}50%{transform:scale(1.3);}100%{transform:scale(1);}}
+@keyframes slideIn{0%{transform:translateX(40px);opacity:0;}100%{transform:translateX(0);opacity:1;}}
 
 /* INTRO */
 .intro-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;z-index:150;transition:opacity 0.4s ease;}
