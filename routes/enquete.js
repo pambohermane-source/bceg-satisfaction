@@ -42,6 +42,16 @@ const questionnaires = {
     { id: 'note_applications', label: 'Les fonctionnalites repondent-elles a vos besoins ?', icon: '🎯' },
     { id: 'note_globale', label: 'Quelle note globale donnez-vous aux services digitaux ?', icon: '⭐' }
   ]},
+  'accueil': { titre: 'Accueil en Agence BCEG', icon: '🏦', accent: '#d4a017', questions: [
+    { id: 'note_accueil', label: 'A votre arrivee, avez-vous ete recu(e) rapidement ?', icon: '⏱️', type: 'choix', options: ['Oui immediatement','Oui apres un court delai','Non, attente prolongee'] },
+    { id: 'note_personnel', label: 'Le personnel d accueil etait-il aimable ?', icon: '😊', type: 'choix', options: ['Tres aimable','Aimable','Peu aimable','Pas aimable'] },
+    { id: 'note_conseiller', label: 'Les informations fournies etaient-elles claires ?', icon: '💬', type: 'choix', options: ['Tres claires','Claires','Peu claires','Confuses'] },
+    { id: 'note_comprehension', label: 'Le personnel a-t-il bien compris votre besoin ?', icon: '🧠', type: 'choix', options: ['Totalement','Partiellement','Pas du tout'] },
+    { id: 'note_acces', label: "Comment evaluez-vous la facilite d'acces a l'agence ?", icon: '🚪', type: 'choix', options: ['Tres satisfaisant','Satisfaisant','Peu satisfaisant','Insatisfaisant'] },
+    { id: 'note_confort', label: 'Comment jugez-vous la proprete et le confort des locaux ?', icon: '🏛️', type: 'choix', options: ['Tres satisfaisant','Satisfaisant','Peu satisfaisant','Insatisfaisant'] },
+    { id: 'note_globale', label: 'Globalement, etes-vous satisfait(e) de l accueil a la BCEG ?', icon: '⭐', type: 'choix', options: ['Tres satisfait(e)','Satisfait(e)','Peu satisfait(e)','Insatisfait(e)'] },
+    { id: 'note_recommandation', label: 'Recommanderiez-vous la BCEG a votre entourage ?', icon: '🤝', type: 'choix', options: ['Oui certainement','Oui probablement','Non probablement pas','Non certainement pas'] }
+  ]},
   'default': { titre: 'Votre visite en agence', icon: '🏦', accent: '#d4a017', questions: [
     { id: 'note_accueil', label: "L'accueil a votre arrivee en agence etait-il satisfaisant ?", icon: '😊' },
     { id: 'note_attente', label: "Etes-vous satisfait(e) du temps d'attente ?", icon: '⏱️' },
@@ -59,6 +69,7 @@ function detecterType(t) {
   if (t.includes('ouverture')||t.includes('compte')) return 'ouverture';
   if (t.includes('gestionnaire')||t.includes('conseiller')) return 'gestionnaire';
   if (t.includes('digital')||t.includes('online')||t.includes('b-online')) return 'digital';
+  if (t.includes('accueil')||t.includes('agence')) return 'accueil';
   return 'default';
 }
 
