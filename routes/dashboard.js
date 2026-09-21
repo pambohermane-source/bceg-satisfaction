@@ -20,11 +20,10 @@ router.get('/', function(req, res) {
       var recNouv = reclamations.filter(function(r){return r.statut==='Nouvelle';}).length;
       var recTotal = reclamations.length;
 
-      // Satisfaction moyenne
+      // Satisfaction moyenne (note_globale : champ conservé à l'identique dans le nouveau schéma)
       var moyGlobale = total===0 ? 0 : reponses.reduce(function(s,r){return s+(r.note_globale||0);},0)/total;
       var moyGlobaleStr = total===0 ? '—' : moyGlobale.toFixed(1);
 
-      // Niveau de satisfaction en texte
       function niveauSat(m) {
         if (m >= 4.5) return { txt: 'Excellent !', color: '#27ae60', emoji: '😄' };
         if (m >= 3.5) return { txt: 'Bien', color: '#4d553d', emoji: '🙂' };
@@ -33,11 +32,15 @@ router.get('/', function(req, res) {
       }
       var sat = niveauSat(moyGlobale);
 
-      // Promoteurs (note globale >= 4)
       var promoteurs = reponses.filter(function(r){return r.note_globale>=4;}).length;
       var pctPromoteurs = total===0 ? 0 : Math.round((promoteurs/total)*100);
 
-      // Cette semaine
+      // NPS classique (0-10) : promoteurs 9-10, detracteurs 0-6
+      var repAvecNps = reponses.filter(function(r){return r.score_nps!==null && r.score_nps!==undefined;});
+      var npsPromoteurs = repAvecNps.filter(function(r){return r.score_nps>=9;}).length;
+      var npsDetracteurs = repAvecNps.filter(function(r){return r.score_nps<=6;}).length;
+      var npsScore = repAvecNps.length===0 ? null : Math.round(((npsPromoteurs-npsDetracteurs)/repAvecNps.length)*100);
+
       var debutSemaine = new Date();
       debutSemaine.setDate(debutSemaine.getDate() - debutSemaine.getDay());
       debutSemaine.setHours(0,0,0,0);
@@ -48,7 +51,6 @@ router.get('/', function(req, res) {
         return r.date_reception && new Date(r.date_reception) >= debutSemaine;
       });
 
-      // Par agence
       var agences = {};
       reponses.forEach(function(r) {
         var ag = r.agence_nom || 'Non renseigne';
@@ -57,7 +59,6 @@ router.get('/', function(req, res) {
         agences[ag].somme+=(r.note_globale||0);
       });
 
-      // Par gestionnaire
       var gestionnaires = {};
       reponses.forEach(function(r) {
         if (!r.nom_gestionnaire || !r.nom_gestionnaire.trim()) return;
@@ -67,7 +68,6 @@ router.get('/', function(req, res) {
         gestionnaires[nom].somme+=(r.note_globale||0);
       });
 
-      // Evolution 7 jours
       var joursMap = {};
       var joursLabels = [];
       for(var i=6;i>=0;i--) {
@@ -85,10 +85,8 @@ router.get('/', function(req, res) {
 
       var today = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
-      // Commentaires recents
       var commentaires = reponses.filter(function(r){return r.commentaire && r.commentaire.trim().length > 5;}).slice(0,5);
 
-      // Agence rows
       var agenceRows = Object.entries(agences).sort(function(a,b){
         return (b[1].somme/b[1].total)-(a[1].somme/a[1].total);
       }).map(function(entry, i) {
@@ -108,7 +106,6 @@ router.get('/', function(req, res) {
           +'</div>';
       }).join('');
 
-      // Gestionnaire rows
       var gestRows = Object.entries(gestionnaires).sort(function(a,b){
         return (b[1].somme/b[1].total)-(a[1].somme/a[1].total);
       }).slice(0,5).map(function(entry, i) {
@@ -128,7 +125,6 @@ router.get('/', function(req, res) {
           +'</div>';
       }).join('');
 
-      // Reclamations rows
       var recRows = reclamations.slice(0,8).map(function(r) {
         var sColor = r.statut==='Nouvelle'?'#e74c3c':r.statut==='En cours'?'#f39c12':'#27ae60';
         var sIcon = r.statut==='Nouvelle'?'🔴':r.statut==='En cours'?'🟡':'🟢';
@@ -146,7 +142,6 @@ router.get('/', function(req, res) {
           +'</div>';
       }).join('');
 
-      // Graphique barres
       var chartBars = joursLabels.map(function(j) {
         var count = joursMap[j.key];
         var h = count > 0 ? Math.max(12, Math.round((count/maxJour)*80)) : 4;
@@ -159,7 +154,6 @@ router.get('/', function(req, res) {
           +'</div>';
       }).join('');
 
-      // Commentaires
       var comHTML = commentaires.length === 0
         ? '<div style="text-align:center;color:#aaa;padding:24px;font-size:14px;">Aucun commentaire pour l\'instant</div>'
         : commentaires.map(function(r) {
@@ -188,8 +182,6 @@ header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;}
 .badge{background:#e74c3c;color:white;border-radius:12px;padding:1px 7px;font-size:11px;font-weight:800;margin-left:6px;}
 .container{max-width:1200px;margin:0 auto;padding:28px 24px;}
 .tab-content{display:none;}.tab-content.active{display:block;}
-
-/* ALERTE SEMAINE */
 .alerte-semaine{background:linear-gradient(135deg,#4d553d,#5a6648);border-radius:16px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
 .alerte-semaine .txt{color:white;}
 .alerte-semaine .txt h3{font-size:16px;font-weight:800;margin-bottom:4px;}
@@ -198,8 +190,6 @@ header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;}
 .alerte-semaine .chiffre{text-align:center;background:rgba(255,255,255,0.12);border-radius:12px;padding:12px 20px;}
 .alerte-semaine .chiffre .nb{font-size:28px;font-weight:900;color:white;}
 .alerte-semaine .chiffre .lb{font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px;font-weight:600;}
-
-/* KPI CARDS */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px;}
 .kpi{background:white;border-radius:18px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.06);position:relative;overflow:hidden;}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;}
@@ -213,8 +203,6 @@ header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;}
 .kpi .info-btn{position:absolute;top:16px;right:16px;width:20px;height:20px;border-radius:50%;background:#f0f3f0;color:#aaa;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;cursor:help;}
 .kpi .tooltip{display:none;position:absolute;top:44px;right:8px;background:#2c2c2c;color:white;padding:10px 14px;border-radius:10px;font-size:12px;width:220px;line-height:1.5;z-index:10;}
 .kpi:hover .tooltip{display:block;}
-
-/* CARDS */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
 @media(max-width:800px){.grid2{grid-template-columns:1fr;}}
 .card{background:white;border-radius:18px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-bottom:20px;}
@@ -223,14 +211,8 @@ header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;}
 .card-hdr .sub{font-size:12px;color:#aaa;margin-top:2px;}
 .export-btn{background:linear-gradient(135deg,#4d553d,#3a4130);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;}
 .export-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(77,85,61,0.3);}
-
-/* GRAPHIQUE */
 .chart{display:flex;align-items:flex-end;gap:8px;height:100px;margin-bottom:8px;}
-
-/* EMPTY */
 .empty{text-align:center;color:#aaa;padding:40px;font-size:14px;}
-
-/* REC TABLE */
 .rec-stat{display:flex;gap:12px;margin-bottom:20px;}
 .rec-card{flex:1;border-radius:14px;padding:16px;text-align:center;}
 .rec-card.rouge{background:#fde8e8;}
@@ -264,10 +246,8 @@ header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;}
 
 <div class="container">
 
-  <!-- VUE D'ENSEMBLE -->
   <div class="tab-content active" id="tab-accueil">
 
-    <!-- RESUME SEMAINE -->
     <div class="alerte-semaine">
       <div class="txt">
         <h3>📅 Cette semaine</h3>
@@ -283,7 +263,6 @@ header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;}
       </div>
     </div>
 
-    <!-- 4 KPI SIMPLES -->
     <div class="kpi-grid">
       <div class="kpi vert">
         <div class="info-btn">?
@@ -303,13 +282,13 @@ header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;}
         <div class="explication" style="color:${sat.color};font-weight:700;">${sat.txt}</div>
       </div>
 
-      <div class="kpi ${pctPromoteurs>=60?'vert':pctPromoteurs>=40?'orange':'rouge'}">
+      <div class="kpi bleu">
         <div class="info-btn">?
-          <div class="tooltip">Ce sont les clients qui ont donne 4 ou 5 etoiles. Ce sont vos clients les plus satisfaits, ceux qui recommandent la BCEG.</div>
+          <div class="tooltip">Le score NPS (-100 a +100) mesure la probabilite de recommandation. Au-dessus de 0 = plutot bon signe, au-dessus de 50 = excellent.</div>
         </div>
-        <div class="question">Combien sont vraiment satisfaits ?</div>
-        <div class="big-val" style="color:${pctPromoteurs>=60?'#27ae60':pctPromoteurs>=40?'#f39c12':'#e74c3c'};">${pctPromoteurs}%</div>
-        <div class="explication">${promoteurs} client(s) sur ${total} ont donne 4 ou 5 etoiles</div>
+        <div class="question">Nos clients nous recommandent-ils ?</div>
+        <div class="big-val" style="color:#2d6a9f;">${npsScore===null?'—':npsScore}</div>
+        <div class="explication">Score NPS ${npsScore===null?'(pas encore de donnees)':'sur '+repAvecNps.length+' reponse(s)'}</div>
       </div>
 
       <div class="kpi ${recNouv===0?'vert':recNouv<=2?'orange':'rouge'}">
@@ -322,7 +301,6 @@ header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;}
       </div>
     </div>
 
-    <!-- GRAPHIQUE 7 JOURS -->
     <div class="card">
       <div class="card-hdr">
         <div>
@@ -336,7 +314,6 @@ header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;}
     </div>
   </div>
 
-  <!-- PAR AGENCE -->
   <div class="tab-content" id="tab-agences">
     <div class="card">
       <div class="card-hdr">
@@ -352,7 +329,6 @@ header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;}
     </div>
   </div>
 
-  <!-- COMMERCIAUX -->
   <div class="tab-content" id="tab-commerciaux">
     <div class="card">
       <div class="card-hdr">
@@ -368,7 +344,6 @@ header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;}
     </div>
   </div>
 
-  <!-- RECLAMATIONS -->
   <div class="tab-content" id="tab-reclamations">
     <div class="rec-stat">
       <div class="rec-card rouge"><div class="rn">${reclamations.filter(function(r){return r.statut==='Nouvelle';}).length}</div><div class="rl">🔴 A traiter</div></div>
@@ -389,7 +364,6 @@ header p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;}
     </div>
   </div>
 
-  <!-- COMMENTAIRES -->
   <div class="tab-content" id="tab-commentaires">
     <div class="card">
       <div class="card-hdr">
@@ -421,56 +395,81 @@ router.post('/statut', function(req, res) {
     [req.body.statut,req.body.id], function(err){ res.json({success:!err}); });
 });
 
+// Colonnes détaillées exportées : alignées sur le nouveau questionnaire Qualité
+var COLONNES_EXPORT = [
+  ['date_reponse', 'Date'],
+  ['client_nom', 'Client Nom'],
+  ['agence_nom', 'Agence'],
+  ['type_operation', 'Operation'],
+  ['nom_gestionnaire', 'Gestionnaire'],
+  ['secteur_activite', 'Secteur activite'],
+  ['anciennete_client', 'Anciennete client'],
+  ['objet_demarche', 'Objet demarche'],
+  ['canal_demarche', 'Canal demarche'],
+  ['note_qualite_accueil', 'Note accueil'],
+  ['note_courtoisie', 'Note courtoisie'],
+  ['note_disponibilite', 'Note disponibilite'],
+  ['note_rapidite_prise_en_charge', 'Note rapidite prise en charge'],
+  ['note_orientation', 'Note orientation'],
+  ['temps_attente', "Temps d'attente"],
+  ['conseiller_joignable', 'Conseiller joignable'],
+  ['conseiller_ecoute', 'Conseiller ecoute'],
+  ['clarte_informations', 'Clarte informations'],
+  ['traite_premier_contact', 'Traite au premier contact'],
+  ['raison_non_traite', 'Raison si non traite'],
+  ['informe_avancement', 'Informe de l\'avancement'],
+  ['delai_traitement', 'Delai de traitement'],
+  ['delai_respecte', 'Delai respecte'],
+  ['reponse_adaptee', 'Reponse adaptee au besoin'],
+  ['suivi_apres_service', 'Suivi apres service'],
+  ['note_globale', 'Note globale'],
+  ['score_nps', 'Score NPS (0-10)'],
+  ['commentaire', 'Commentaire']
+];
+
+function ligneCSV(r) {
+  return COLONNES_EXPORT.map(function(col) {
+    var key = col[0];
+    var val = r[key];
+    if (key === 'client_nom') val = (r.client_prenom||'') + ' ' + (r.client_nom||'');
+    if (key === 'date_reponse') val = (val||'').toString().substring(0,10);
+    val = (val===null||val===undefined) ? '' : String(val);
+    if (val.indexOf(',') !== -1 || val.indexOf('"') !== -1) {
+      val = '"' + val.replace(/"/g,'""') + '"';
+    }
+    return val;
+  }).join(',');
+}
+
+function requeteExportComplete(where, params, res, filenamePrefix) {
+  var sql = `SELECT r.*, o.type_operation, o.nom_gestionnaire,
+          c.nom as client_nom, c.prenom as client_prenom, a.nom as agence_nom
+          FROM reponses r
+          LEFT JOIN enquetes e ON e.id=r.enquete_id
+          LEFT JOIN operations o ON o.id=e.operation_id
+          LEFT JOIN clients c ON c.id=o.client_id
+          LEFT JOIN agences a ON a.id=c.agence_id
+          ${where ? 'WHERE ' + where : ''}
+          ORDER BY r.date_reponse DESC`;
+  db.all(sql, params || [], function(err, rows) {
+    rows = rows || [];
+    var csv = COLONNES_EXPORT.map(function(c){return c[1];}).join(',') + '\n';
+    rows.forEach(function(r){ csv += ligneCSV(r) + '\n'; });
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="' + filenamePrefix + '_' + new Date().toISOString().substring(0,10) + '.csv"');
+    res.send('\uFEFF' + csv);
+  });
+}
+
 router.get('/export-semaine', function(req, res) {
   var debutSemaine = new Date();
   debutSemaine.setDate(debutSemaine.getDate() - debutSemaine.getDay());
   debutSemaine.setHours(0,0,0,0);
-  db.all(`SELECT r.date_reponse, c.nom, c.prenom, a.nom as agence, o.type_operation, o.nom_gestionnaire,
-          r.note_accueil, r.note_attente, r.note_conseiller, r.note_traitement, r.note_applications, r.note_globale, r.score_nps, r.commentaire
-          FROM reponses r
-          LEFT JOIN enquetes e ON e.id=r.enquete_id
-          LEFT JOIN operations o ON o.id=e.operation_id
-          LEFT JOIN clients c ON c.id=o.client_id
-          LEFT JOIN agences a ON a.id=c.agence_id
-          WHERE r.date_reponse >= ?
-          ORDER BY r.date_reponse DESC`, [debutSemaine.toISOString()], function(err, rows) {
-    rows = rows || [];
-    var csv = 'Date,Client,Agence,Operation,Gestionnaire,Accueil,Attente,Conseiller,Traitement,Digital,Note Globale,NPS,Commentaire\n';
-    rows.forEach(function(r){
-      csv += [(r.date_reponse||'').toString().substring(0,10),
-              (r.prenom||'')+' '+(r.nom||''), r.agence||'', r.type_operation||'', r.nom_gestionnaire||'',
-              r.note_accueil||'', r.note_attente||'', r.note_conseiller||'', r.note_traitement||'',
-              r.note_applications||'', r.note_globale||'', r.score_nps||'',
-              '"'+(r.commentaire||'').replace(/"/g,'""')+'"'].join(',') + '\n';
-    });
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="BCEG_Satisfaction_Semaine_' + new Date().toISOString().substring(0,10) + '.csv"');
-    res.send('\uFEFF' + csv);
-  });
+  requeteExportComplete('r.date_reponse >= ?', [debutSemaine.toISOString()], res, 'BCEG_Satisfaction_Semaine');
 });
 
 router.get('/export-satisfaction', function(req, res) {
-  db.all(`SELECT r.date_reponse, c.nom, c.prenom, a.nom as agence, o.type_operation, o.nom_gestionnaire,
-          r.note_accueil, r.note_attente, r.note_conseiller, r.note_traitement, r.note_applications, r.note_globale, r.score_nps, r.commentaire
-          FROM reponses r
-          LEFT JOIN enquetes e ON e.id=r.enquete_id
-          LEFT JOIN operations o ON o.id=e.operation_id
-          LEFT JOIN clients c ON c.id=o.client_id
-          LEFT JOIN agences a ON a.id=c.agence_id
-          ORDER BY r.date_reponse DESC`, [], function(err, rows) {
-    rows = rows || [];
-    var csv = 'Date,Client,Agence,Operation,Gestionnaire,Accueil,Attente,Conseiller,Traitement,Digital,Note Globale,NPS,Commentaire\n';
-    rows.forEach(function(r){
-      csv += [(r.date_reponse||'').toString().substring(0,10),
-              (r.prenom||'')+' '+(r.nom||''), r.agence||'', r.type_operation||'', r.nom_gestionnaire||'',
-              r.note_accueil||'', r.note_attente||'', r.note_conseiller||'', r.note_traitement||'',
-              r.note_applications||'', r.note_globale||'', r.score_nps||'',
-              '"'+(r.commentaire||'').replace(/"/g,'""')+'"'].join(',') + '\n';
-    });
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="BCEG_Satisfaction_' + new Date().toISOString().substring(0,10) + '.csv"');
-    res.send('\uFEFF' + csv);
-  });
+  requeteExportComplete(null, [], res, 'BCEG_Satisfaction');
 });
 
 router.get('/export-commerciaux', function(req, res) {
